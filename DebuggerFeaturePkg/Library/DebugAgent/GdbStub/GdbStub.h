@@ -34,7 +34,7 @@ typedef struct _GDB_REGISTER_OFFSET_DATA {
   CONST CHAR8    *Type;
 } GDB_REGISTER_OFFSET_DATA;
 
-#define REG_NOT_PRESENT (0xFFFFFFFF)
+#define REG_NOT_PRESENT  (0xFFFFFFFF)
 
 extern GDB_REGISTER_OFFSET_DATA  gRegisterOffsets[];
 extern UINTN                     gRegisterCount;

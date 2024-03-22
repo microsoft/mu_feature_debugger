@@ -328,7 +328,7 @@ CheckPageAccess (
   UINTN    Attributes;
 
   // This is a workaround. Windbg will try to read some KSEG addresses by default
-  // which will never exist in UEFI becuase of the identity mapping requirements.
+  // which will never exist in UEFI because of the identity mapping requirements.
   // This shouldn't be required, but either some platforms have over-zealous page
   // table mappings or the page table walking logic is insufficient.
   if (Address >= 0xfffff00000000000) {

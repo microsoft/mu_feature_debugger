@@ -1,0 +1,18 @@
+/Build/
+.DS_Store
+*_extdep/
+*.pyc
+__pycache__/
+tags/
+.vscode/
+.vs/
+*.bak
+BuildConfig.conf
+UefiDbgExt/x64/
+*.vcxproj.user
+/Conf/
+/**/Include/Generated/**
+/**/AutoGen/**
+
+# Ignore Rust build output
+/target

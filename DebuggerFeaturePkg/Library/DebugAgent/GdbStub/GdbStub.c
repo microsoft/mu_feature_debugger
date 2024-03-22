@@ -660,7 +660,6 @@ ReadRegisterFromContext (
       Output[i * 2]       = HexChars[RegPtr[i] >> 4];
       Output[(i * 2) + 1] = HexChars[RegPtr[i] & 0xF];
     }
-
   } else {
     for (i = 0; i < gRegisterOffsets[RegNumber].Size * 2; i++) {
       Output[i] = '0';

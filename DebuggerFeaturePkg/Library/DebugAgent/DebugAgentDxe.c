@@ -665,7 +665,9 @@ DxeDebugSetupCallbacks (
   return EFI_SUCCESS;
 }
 
-VOID GdbBreak();
+VOID
+GdbBreak (
+  );
 
 /**
   Initialize debug agent.

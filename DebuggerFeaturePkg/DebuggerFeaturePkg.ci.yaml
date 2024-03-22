@@ -68,7 +68,12 @@
             "structions",
             "uefiext",
             "wdbgexts",
-            "windbgx",],
+            "windbgx",
+            "fctrl",
+            "fioff",
+            "fiseg",
+            "fooff",
+            "foseg"],
         "IgnoreStandardPaths": [],   # Standard Plugin defined paths that should be ignore
         "AdditionalIncludePaths": [] # Additional paths to spell check (wildcards supported)
     },
