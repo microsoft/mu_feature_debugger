@@ -5,14 +5,11 @@
 __pycache__/
 tags/
 .vscode/
-.vs/
 *.bak
 BuildConfig.conf
-UefiDbgExt/x64/
-*.vcxproj.user
-/Conf/
-/**/Include/Generated/**
-/**/AutoGen/**
 
-# Ignore Rust build output
-/target
+# Submodules
+MU_BASECORE/
+
+# Ignore unused UDK PKGs.
+/Conf/
