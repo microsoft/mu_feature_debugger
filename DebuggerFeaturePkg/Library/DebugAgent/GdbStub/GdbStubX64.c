@@ -48,7 +48,23 @@ GDB_REGISTER_OFFSET_DATA  gRegisterOffsets[] = {
   { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, Cr2),    8, "cr2",    "int64" },
   { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, Cr3),    8, "cr3",    "int64" },
   { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, Cr4),    8, "cr4",    "int64" },
-  { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, Cr8),    8, "cr8",    "int64" }
+  { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, Cr8),    8, "cr8",    "int64" },
+  { REG_NOT_PRESENT,                            4, "fctrl",  "int" },
+  { REG_NOT_PRESENT,                            4, "fstat",  "int" },
+  { REG_NOT_PRESENT,                            4, "ftag",   "int" },
+  { REG_NOT_PRESENT,                            4, "fiseg",  "int" },
+  { REG_NOT_PRESENT,                            4, "fioff",  "int" },
+  { REG_NOT_PRESENT,                            4, "foseg",  "int" },
+  { REG_NOT_PRESENT,                            4, "fooff",  "int" },
+  { REG_NOT_PRESENT,                           10, "fop",   "i387_ext" },
+  { REG_NOT_PRESENT,                           10, "st0",   "i387_ext" },
+  { REG_NOT_PRESENT,                           10, "st1",   "i387_ext" },
+  { REG_NOT_PRESENT,                           10, "st2",   "i387_ext" },
+  { REG_NOT_PRESENT,                           10, "st3",   "i387_ext" },
+  { REG_NOT_PRESENT,                           10, "st4",   "i387_ext" },
+  { REG_NOT_PRESENT,                           10, "st5",   "i387_ext" },
+  { REG_NOT_PRESENT,                           10, "st6",   "i387_ext" },
+  { REG_NOT_PRESENT,                           10, "st7",   "i387_ext" }
 };
 
 UINTN  gRegisterCount = (sizeof (gRegisterOffsets) / sizeof (GDB_REGISTER_OFFSET_DATA));

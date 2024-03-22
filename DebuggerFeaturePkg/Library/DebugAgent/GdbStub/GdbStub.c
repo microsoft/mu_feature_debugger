@@ -29,7 +29,7 @@
 //
 
 #define MAX_REQUEST_SIZE   2048
-#define MAX_RESPONSE_SIZE  2048
+#define MAX_RESPONSE_SIZE  0x1000
 #define SCRATCH_SIZE       1024
 
 // Used for quick translation of numbers into HEX.
@@ -652,15 +652,22 @@ ReadRegisterFromContext (
   UINT8  *RegPtr;
   UINTN  i;
 
-  RegPtr = Registers + gRegisterOffsets[RegNumber].Offset;
+  if (gRegisterOffsets[RegNumber].Offset != REG_NOT_PRESENT) {
+    RegPtr = Registers + gRegisterOffsets[RegNumber].Offset;
 
-  // Parse one byte at a time.
-  for (i = 0; i < gRegisterOffsets[RegNumber].Size; i++) {
-    Output[i * 2]       = HexChars[RegPtr[i] >> 4];
-    Output[(i * 2) + 1] = HexChars[RegPtr[i] & 0xF];
+    // Parse one byte at a time.
+    for (i = 0; i < gRegisterOffsets[RegNumber].Size; i++) {
+      Output[i * 2]       = HexChars[RegPtr[i] >> 4];
+      Output[(i * 2) + 1] = HexChars[RegPtr[i] & 0xF];
+    }
+
+  } else {
+    for (i = 0; i < gRegisterOffsets[RegNumber].Size * 2; i++) {
+      Output[i] = '0';
+    }
   }
 
-  return &Output[i * 2];
+  return &Output[gRegisterOffsets[RegNumber].Size * 2];
 }
 
 /**
@@ -691,12 +698,14 @@ WriteRegisterToContext (
     return NULL;
   }
 
-  RegPtr        = Registers + gRegisterOffsets[RegNumber].Offset;
-  OrigChar      = Input[StrLen];
-  Input[StrLen] = 0;
-  Value         = AsciiStrHexToUintn (Input);
-  Input[StrLen] = OrigChar;
-  CopyMem (RegPtr, &Value, gRegisterOffsets[RegNumber].Size);
+  if (gRegisterOffsets[RegNumber].Offset != REG_NOT_PRESENT) {
+    RegPtr        = Registers + gRegisterOffsets[RegNumber].Offset;
+    OrigChar      = Input[StrLen];
+    Input[StrLen] = 0;
+    Value         = AsciiStrHexToUintn (Input);
+    Input[StrLen] = OrigChar;
+    CopyMem (RegPtr, &Value, gRegisterOffsets[RegNumber].Size);
+  }
 
   return Input + StrLen;
 }
