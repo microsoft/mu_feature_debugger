@@ -1,0 +1,36 @@
+## @file
+#  Implementation of the DebugTransportLib using the serial port library.
+#
+#  Copyright (c) Microsoft Corporation.
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 1.26
+  BASE_NAME                      = DebugTransportSerialLib
+  FILE_GUID                      = D4C34C0A-1D5A-4816-A178-822C6688E209
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = DebugTransportLib
+
+#
+#  VALID_ARCHITECTURES           = X64 AARCH64
+#
+
+[Sources]
+  DebugTransportSerialLib.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  DebuggerFeaturePkg/DebuggerFeaturePkg.dec
+
+[LibraryClasses]
+  SerialPortLib
+
+[Protocols]
+
+[Pcd]
+
+[Depex]
+  TRUE

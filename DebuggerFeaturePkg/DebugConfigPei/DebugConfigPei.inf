@@ -1,0 +1,49 @@
+## @file
+#
+#  Module to configure the debugger.
+#
+#  Copyright (C) Microsoft Corporation.
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010017
+  BASE_NAME                      = DebugConfigPei
+  FILE_GUID                      = 0F382F49-1E9E-423E-8611-E4B4650DCD38
+  MODULE_TYPE                    = PEIM
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = DebugConfigPeiEntry
+
+[Sources]
+  DebugConfigPei.c
+
+[Sources.IA32,Sources.X64]
+  DebugConfigX64.c
+
+[Sources.AARCH64]
+  DebugConfigAarch64.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  DebuggerFeaturePkg/DebuggerFeaturePkg.dec
+
+[LibraryClasses]
+  BaseMemoryLib
+  PeimEntryPoint
+  DebugLib
+  HobLib
+  BaseLib
+  TimerLib
+  DeviceStateLib
+
+[Guids]
+  gDebuggerControlHobGuid
+
+[Pcd.common]
+  DebuggerFeaturePkgTokenSpaceGuid.PcdDebugConfigFlags              ## CONSUMES
+  DebuggerFeaturePkgTokenSpaceGuid.PcdInitialBreakpointTimeoutMs    ## CONSUMES
+
+[Depex]
+  TRUE

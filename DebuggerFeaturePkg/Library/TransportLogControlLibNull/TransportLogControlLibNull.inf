@@ -1,0 +1,22 @@
+#@file
+#
+#  This module contains code to control logging on the debug transport lib.
+#
+#  Copyright (c) Microsoft Corporation.
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+
+[Defines]
+  INF_VERSION                    = 0x00010016
+  BASE_NAME                      = TransportLogControlLibNull
+  FILE_GUID                      = D63A8693-037D-4F2B-A42E-8DAA62EFD130
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = TransportLogControlLib|DXE_DRIVER UEFI_APPLICATION DXE_CORE
+
+[Sources]
+  TransportLogControlLibNull.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  DebuggerFeaturePkg/DebuggerFeaturePkg.dec
