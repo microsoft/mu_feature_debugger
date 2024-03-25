@@ -1,8 +1,8 @@
-# 
+#
 # GitHub Action Workflow for building the UEFI debugger extension.
 #
 # Copyright (c) Microsoft Corporation
-# 
+#
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 #
 
@@ -18,11 +18,13 @@ on:
     branches: [ main ]
     paths:
       - 'UefiDbgExt/**'
+  release:
+    types: [published]
 
 jobs:
   build:
     strategy:
-      fail-fast: false 
+      fail-fast: false
       matrix:
         configuration: [Debug, Release]
         platform: [x64]
@@ -30,16 +32,23 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-      
+
       - name: Setup MsBuild
         uses: microsoft/setup-msbuild@v1.3
-      
+
       - name: Build
         run: msbuild UefiDbgExt\uefiext.vcxproj -property:Configuration=${{ matrix.configuration }} -property:Platform=${{ matrix.platform }}
-      
+
       - name: Publish Binary
         if: ${{ matrix.configuration == 'Release' && github.event_name != 'pull_request' }}
         uses: actions/upload-artifact@v3
         with:
           name: UefiDbgExt-${{ matrix.platform }}-${{ matrix.configuration }}
           path: UefiDbgExt\${{ matrix.platform }}\${{ matrix.configuration }}\uefiext.dll
+
+      - name: Publish Release Asset
+        if: ${{ matrix.configuration == 'Release' && github.event_name == 'release' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} UefiDbgExt\${{ matrix.platform }}\${{ matrix.configuration }}\uefiext.dll

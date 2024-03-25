@@ -11,5 +11,9 @@ BuildConfig.conf
 # Submodules
 MU_BASECORE/
 
-# Ignore unused UDK PKGs.
+# Build conf
 /Conf/
+
+# UEFI Ext Build
+UefiDbgExt/uefiext/
+UefiDbgExt/x64/

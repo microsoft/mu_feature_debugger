@@ -26,11 +26,7 @@ modulebreak (
 
   INIT_API ();
 
-  if (strlen (args) == 0) {
-    dprintf ("Must provide module name!");
-  }
-
-  sprintf_s (Command, sizeof (Command), "ea gDbgBreakOnModuleLoadString \"%s\"", args);
+  sprintf_s (Command, sizeof (Command), ".exdicmd target:0:b%s", args);
   g_ExtControl->Execute (
                   DEBUG_OUTCTL_ALL_CLIENTS,
                   Command,
