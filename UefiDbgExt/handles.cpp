@@ -71,52 +71,43 @@ protocols (
   return S_OK;
 }
 
-// HRESULT CALLBACK
-// handles (
-//   PDEBUG_CLIENT4  Client,
-//   PCSTR           args
-//   )
-// {
-//   ULONG64  HeadAddress;
-//   ULONG64  Entry;
-//   GUID     ProtocolID;
-//   UINT64   Signature;
-//   UINT64   Index;
-//   ULONG    ProtListOffset;
-//   ULONG    NotifyListOffset;
+HRESULT CALLBACK
+handles (
+  PDEBUG_CLIENT4  Client,
+  PCSTR           args
+  )
+{
+  ULONG64  HeadAddress;
+  ULONG64  Entry;
+  UINT64   Signature;
+  ULONG    ProtListOffset;
 
-//   INIT_API ();
+  INIT_API ();
 
-//   UNREFERENCED_PARAMETER (args);
+  UNREFERENCED_PARAMETER (args);
 
-//   if (GetExpressionEx (args, &EnumIndex, &args) == FALSE) {
-//     HobAddr = GetTableAddress (HobList);
-//   }
+  HeadAddress = GetExpression ("&gHandleList");
+  if (HeadAddress == NULL) {
+    dprintf ("Failed to find gHandleList!\n");
+    return ERROR_NOT_FOUND;
+  }
 
-//   HeadAddress = GetExpression ("&gHandleList");
-//   if (HeadAddress == NULL) {
-//     dprintf ("Failed to find gHandleList!\n");
-//     return ERROR_NOT_FOUND;
-//   }
+  GetFieldOffset ("IHANDLE", "Protocols", &ProtListOffset);
+  Entry = 0;
+  while ((Entry = GetNextListEntry (HeadAddress, "IHANDLE", "AllHandles", Entry)) != 0) {
+    GetFieldValue (Entry, "IHANDLE", "Signature", Signature);
 
-//   GetFieldOffset (Type, Field, &ProtListOffset);
-//   Index = 0;
-//   Entry = 0;
-//   while ((Entry = GetNextListEntry (HeadAddress, "IHANDLE", "AllHandles", Entry)) != 0) {
-//     GetFieldValue (Entry, "IHANDLE", "Signature", Signature);
-//     GetFieldValue (Entry, "IHANDLE", "ProtocolID", ProtocolID);
+    g_ExtControl->ControlledOutput (
+                    DEBUG_OUTCTL_AMBIENT_DML,
+                    DEBUG_OUTPUT_NORMAL,
+                    "<exec cmd=\"dt (IHANDLE)%I64x\">%16I64x</exec> "
+                    "<exec cmd=\"!linkedlist %I64x PROTOCOL_INTERFACE ByProtocol\">Protocols</exec>\n",
+                    Entry,
+                    Entry,
+                    Entry + ProtListOffset
+                    );
+  }
 
-//     if (Index != ) {
-//       g_ExtControl->ControlledOutput (
-//                       DEBUG_OUTCTL_AMBIENT_DML,
-//                       DEBUG_OUTPUT_NORMAL,
-//                       "[%d] <exec cmd=\"!protocollist %016I64x\">Protocol List</exec> %s\n",
-//                       Index++,
-//                       GuidToString (&ProtocolID)
-//                       );
-//     }
-//   }
-
-//   EXIT_API ();
-//   return S_OK;
-// }
+  EXIT_API ();
+  return S_OK;
+}

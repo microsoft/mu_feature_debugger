@@ -73,6 +73,8 @@ help (
     "  hobs                - Enumerates the hand off blocks\n"
     "  modulebreak         - Sets a break on load for the provided module. e.g. 'shell'\n"
     "  protocols           - Lists the protocols from the protocol list.\n"
+    "  handles             - Prints the handles list.\n"
+    "  linkedlist          - Parses a UEFI style linked list of entries.\n"
     );
 
   EXIT_API ();
