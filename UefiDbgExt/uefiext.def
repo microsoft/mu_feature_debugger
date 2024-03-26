@@ -21,6 +21,8 @@ EXPORTS
     modulebreak
     readmsr
     readvar
+    protocols
+    linkedlist
 
 ;--------------------------------------------------------------------
 ;

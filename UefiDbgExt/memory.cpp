@@ -89,7 +89,6 @@ memorymap (
     return ERROR_NOT_SUPPORTED;
   }
 
-  GetFieldOffset ("MEMORY_MAP", "Link", &ListEntryOffset);
   HeadAddress = GetExpression ("&gMemoryMap");
   if (HeadAddress == NULL) {
     dprintf ("Failed to find gMemoryMap!\n");
@@ -98,16 +97,8 @@ memorymap (
 
   dprintf ("    Start             End               Pages             Attributes        MemoryType   \n");
   dprintf ("-------------------------------------------------------------------------------------------------------\n");
-  for (GetFieldValue (HeadAddress, "_LIST_ENTRY", "ForwardLink", Address);
-       Address != HeadAddress;
-       GetFieldValue (Address, "_LIST_ENTRY", "ForwardLink", Address))
-  {
-    if (Address == NULL) {
-      dprintf ("NULL address found in list!\n");
-      return ERROR_NOT_FOUND;
-    }
-
-    MemoryEntry = Address - ListEntryOffset;
+  MemoryEntry = 0;
+  while ((MemoryEntry = GetNextListEntry (HeadAddress, "MEMORY_MAP", "Link", MemoryEntry)) != 0) {
     GetFieldValue (MemoryEntry, "MEMORY_MAP", "Type", Type);
     GetFieldValue (MemoryEntry, "MEMORY_MAP", "Start", Start);
     GetFieldValue (MemoryEntry, "MEMORY_MAP", "End", End);
@@ -186,7 +177,7 @@ hobs (
         HobAddr,
         HobLength,
         HobType,
-        HobType < HOB_TYPE_COUNT ? HobTypes[HobType] : "UKNOWN"
+        HobType < HOB_TYPE_COUNT ? HobTypes[HobType] : "UNKNOWN"
         );
 
       //

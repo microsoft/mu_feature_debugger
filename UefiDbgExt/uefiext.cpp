@@ -72,6 +72,7 @@ help (
     "  setenv              - Set the extensions environment mode\n"
     "  hobs                - Enumerates the hand off blocks\n"
     "  modulebreak         - Sets a break on load for the provided module. e.g. 'shell'\n"
+    "  protocols           - Lists the protocols from the protocol list.\n"
     );
 
   EXIT_API ();

@@ -54,3 +54,16 @@ ULONG64
 GetTableAddress (
   EFI_TABLE  Table
   );
+
+UINT64
+GetNextListEntry (
+  IN ULONG64  Head,
+  IN LPCSTR   Type,
+  IN LPCSTR   Field,
+  IN UINT64   Previous
+  );
+
+PCHAR
+GuidToString (
+  GUID  *Guid
+  );

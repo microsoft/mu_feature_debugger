@@ -212,6 +212,8 @@
     <ClCompile Include="modules.cpp" />
     <ClCompile Include="tables.cpp" />
     <ClCompile Include="swdebug.cpp" />
+    <ClCompile Include="handles.cpp" />
+    <ClCompile Include="efiutil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="readme.md" />
