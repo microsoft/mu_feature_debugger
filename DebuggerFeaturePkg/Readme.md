@@ -138,16 +138,16 @@ but currently windbg will not be able to resolve GCC symbols.
 
 ### UEFI Extension
 
-This package contains an [Windbg Extension for Windbg](./UefiDbgExt/) that
+This package contains an [Windbg Extension for Windbg](../UefiDbgExt/) that
 can be used to access UEFI structures and interact with the UEFI software debugger
-in a more intuitive way. See the the extensions [readme.md](./UefiDbgExt/readme.md)
+in a more intuitive way. See the the extensions [readme.md](../UefiDbgExt/readme.md)
 formore details.
 
 ### Serial to TCP forwarding
 
 Windbg currently only supports connecting to the TCP based GDB server. To be able
 to support COM and named pipe based transports, this package contains a
-[ComToTcpServer.py](./Scripts/ComToTcpServer.py) script to forward traffic between
+[ComToTcpServer.py](../Scripts/ComToTcpServer.py) script to forward traffic between
 a serial device and a TCP server. This can also be useful if the user would like
 to debug from a different machine then is connected to the device. For details on
 full use run `python3 ComToTcpServer.py --help`. A couple common example invocations
