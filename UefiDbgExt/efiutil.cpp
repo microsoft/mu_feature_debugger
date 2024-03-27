@@ -241,7 +241,7 @@ error (
     String = Codes[Error];
   }
 
-  dprintf ("0x%x = %s", Error, String);
+  dprintf ("0x%I64x = %s\n", Error, String);
 
   EXIT_API ();
   return S_OK;
