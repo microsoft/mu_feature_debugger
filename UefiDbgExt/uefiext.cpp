@@ -75,6 +75,7 @@ help (
     "  protocols           - Lists the protocols from the protocol list.\n"
     "  handles             - Prints the handles list.\n"
     "  linkedlist          - Parses a UEFI style linked list of entries.\n"
+    "  error               - Translates an EFI error code.\n"
     );
 
   EXIT_API ();
