@@ -96,7 +96,7 @@ TokenizeArgs (
     return 0;
   }
 
-  strcpy (Strings, args);
+  strcpy_s (Strings, sizeof (Strings), args);
 
   Count   = 0;
   Curr    = &Strings[0];
@@ -133,7 +133,7 @@ linkedlist (
   )
 {
   PSTR     *Tokens;
-  CHAR     TokenCount;
+  ULONG    TokenCount;
   ULONG64  HeadAddr;
   ULONG64  Entry;
   CHAR     Command[256];
@@ -151,6 +151,7 @@ linkedlist (
     return ERROR_INVALID_PARAMETER;
   }
 
+  Entry = 0;
   while ((Entry = GetNextListEntry (HeadAddr, Tokens[1], Tokens[2], Entry)) != 0) {
     sprintf_s (&Command[0], sizeof (Command), "dt (%s)%I64x", Tokens[1], Entry);
     g_ExtControl->Execute (
@@ -159,6 +160,88 @@ linkedlist (
                     DEBUG_EXECUTE_DEFAULT
                     );
   }
+
+  EXIT_API ();
+  return S_OK;
+}
+
+HRESULT CALLBACK
+error (
+  PDEBUG_CLIENT4  Client,
+  PCSTR           args
+  )
+{
+  ULONG64        Error;
+  ULONG64        ErrorOffset;
+  CONST ULONG64  ErrorBit = 0x8000000000000000ULL;
+  PCSTR          String;
+  CONST PCSTR    Codes[] = {
+    "EFI_SUCCESS",                // 0
+    "EFI_WARN_UNKNOWN_GLYPH",     // 1
+    "EFI_WARN_DELETE_FAILURE",    // 2
+    "EFI_WARN_WRITE_FAILURE",     // 3
+    "EFI_WARN_BUFFER_TOO_SMALL",  // 4
+    "EFI_WARN_STALE_DATA",        // 5
+    "EFI_WARN_FILE_SYSTEM"        // 6
+  };
+
+  CONST PCSTR  ErrorCodes[] = {
+    "UNKNOWN",                    // 0
+    "EFI_LOAD_ERROR",             // 1
+    "EFI_INVALID_PARAMETER",      // 2
+    "EFI_UNSUPPORTED",            // 3
+    "EFI_BAD_BUFFER_SIZE",        // 4
+    "EFI_BUFFER_TOO_SMALL",       // 5
+    "EFI_NOT_READY",              // 6
+    "EFI_DEVICE_ERROR",           // 7
+    "EFI_WRITE_PROTECTED",        // 8
+    "EFI_OUT_OF_RESOURCES",       // 9
+    "EFI_VOLUME_CORRUPTED",       // 10
+    "EFI_VOLUME_FULL",            // 11
+    "EFI_NO_MEDIA",               // 12
+    "EFI_MEDIA_CHANGED",          // 13
+    "EFI_NOT_FOUND",              // 14
+    "EFI_ACCESS_DENIED",          // 15
+    "EFI_NO_RESPONSE",            // 16
+    "EFI_NO_MAPPING",             // 17
+    "EFI_TIMEOUT",                // 18
+    "EFI_NOT_STARTED",            // 19
+    "EFI_ALREADY_STARTED",        // 20
+    "EFI_ABORTED",                // 21
+    "EFI_ICMP_ERROR",             // 22
+    "EFI_TFTP_ERROR",             // 23
+    "EFI_PROTOCOL_ERROR",         // 24
+    "EFI_INCOMPATIBLE_VERSION"    // 25
+    "EFI_SECURITY_VIOLATION",     // 26
+    "EFI_CRC_ERROR",              // 27
+    "EFI_END_OF_MEDIA",           // 28
+    "UNKNOWN",                    // 29
+    "UNKNOWN",                    // 30
+    "EFI_END_OF_FILE",            // 31
+    "EFI_INVALID_LANGUAGE",       // 32
+    "EFI_COMPROMISED_DATA",       // 33
+    "UNKNOWN",                    // 34
+    "EFI_HTTP_ERROR"              // 35
+  };
+
+  INIT_API ();
+
+  if (GetExpressionEx (args, &Error, NULL) == FALSE) {
+    dprintf ("Must provide error code or variable!");
+    return ERROR_INVALID_PARAMETER;
+  }
+
+  String = "UNKNOWN";
+  if ((Error & ErrorBit) != 0) {
+    ErrorOffset = Error & ~ErrorBit;
+    if (ErrorOffset < ARRAYSIZE (ErrorCodes)) {
+      String = ErrorCodes[ErrorOffset];
+    }
+  } else if (Error < ARRAYSIZE (Codes)) {
+    String = Codes[Error];
+  }
+
+  dprintf ("0x%I64x = %s\n", Error, String);
 
   EXIT_API ();
   return S_OK;

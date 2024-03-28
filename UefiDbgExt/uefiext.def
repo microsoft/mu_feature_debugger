@@ -24,6 +24,7 @@ EXPORTS
     protocols
     handles
     linkedlist
+    error
 
 ;--------------------------------------------------------------------
 ;
