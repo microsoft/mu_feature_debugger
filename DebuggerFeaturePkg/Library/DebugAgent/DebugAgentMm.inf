@@ -1,6 +1,6 @@
 ## @file
 #
-# The DXE implementation of the DebugAgent.
+# The MM implementation of the DebugAgent.
 #
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
@@ -10,11 +10,12 @@
 
 [Defines]
   INF_VERSION                    = 1.27
-  BASE_NAME                      = DxeCoreDebugAgentLib
-  FILE_GUID                      = 2747cc0d-ce6f-46ef-b589-af319b24cae8
-  MODULE_TYPE                    = DXE_DRIVER
+  BASE_NAME                      = MmCoreDebugAgentLib
+  FILE_GUID                      = EBCDDC65-BE39-4E98-9DC4-CCB37525A991
+  MODULE_TYPE                    = MM_CORE_STANDALONE
   VERSION_STRING                 = 1.0
-  LIBRARY_CLASS                  = DebugAgentLib | DXE_CORE UEFI_APPLICATION
+  LIBRARY_CLASS                  = DebugAgentLib | MM_CORE_STANDALONE
+  PI_SPECIFICATION_VERSION       = 0x00010032
 
 #
 # The following information is for reference only and not required by the build tools.
@@ -23,7 +24,7 @@
 #
 
 [Sources]
-  DebugAgentDxe.c
+  DebugAgentMm.c
   DebugAgent.h
   Breakpoint.c
   GdbStub/GdbStub.c
@@ -49,17 +50,11 @@
 [LibraryClasses]
   BaseLib
   BaseMemoryLib
-  UefiBootServicesTableLib
-  UefiRuntimeServicesTableLib
-  UefiLib
   WatchdogTimerLib
   TimerLib
   HobLib
   CpuExceptionHandlerLib
-  PeCoffGetEntryPointLib
   CacheMaintenanceLib
-  DebugPrintErrorLevelLib
-  DeviceStateLib
   DebugTransportLib
   TransportLogControlLib
 

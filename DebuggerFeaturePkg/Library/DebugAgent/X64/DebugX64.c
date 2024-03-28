@@ -58,7 +58,7 @@ UINT32  ArchExceptionTypes[] = {
 **/
 VOID
 EFIAPI
-DebugExceptionHandler (
+DebuggerExceptionHandler (
   EFI_EXCEPTION_TYPE  InterruptType,
   EFI_SYSTEM_CONTEXT  SystemContext
   )

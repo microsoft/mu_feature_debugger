@@ -44,6 +44,12 @@ CHAR8  DbgLogBuffer[DBG_LOG_SIZE];
 UINTN  DbgLogOffset = 0;
 #endif
 
+DEBUGGER_CONTROL_HOB  DefaultDebugConfig = {
+  { 0x3 },
+  0x300000, // Reasonable guess, timing may be inaccurate.
+  0
+};
+
 //
 // Global variables used to track state and pointers.
 //
@@ -379,14 +385,16 @@ DebugAgentExceptionInitialize (
       Status = gCpu->RegisterInterruptHandler (
                        gCpu,
                        ArchExceptionTypes[i],
-                       DebugExceptionHandler
+                       DebuggerExceptionHandler
                        );
     } else {
-      Status = RegisterCpuInterruptHandler (ArchExceptionTypes[i], DebugExceptionHandler);
+      Status = RegisterCpuInterruptHandler (ArchExceptionTypes[i], DebuggerExceptionHandler);
     }
 
     if (EFI_ERROR (Status)) {
       ASSERT_EFI_ERROR (Status);
+      DebugAgentExceptionDestroy ();
+      return Status;
     }
   }
 
@@ -665,10 +673,6 @@ DxeDebugSetupCallbacks (
   return EFI_SUCCESS;
 }
 
-VOID
-GdbBreak (
-  );
-
 /**
   Initialize debug agent.
 
@@ -706,15 +710,19 @@ InitializeDebugAgent (
   //
 
   if (InitFlag == DEBUG_AGENT_INIT_DXE_CORE) {
-    // Check if the HOB has been provided, otherwise bail.
-    GuidHob = GetNextGuidHob (&gDebuggerControlHobGuid, Context);
-    if (GuidHob == NULL) {
-      return;
-    }
+    if (PcdGetBool (PcdForceEnableDebugger)) {
+      DebugHob = &DefaultDebugConfig;
+    } else {
+      // Check if the HOB has been provided, otherwise bail.
+      GuidHob = GetNextGuidHob (&gDebuggerControlHobGuid, Context);
+      if (GuidHob == NULL) {
+        return;
+      }
 
-    DebugHob = (DEBUGGER_CONTROL_HOB *)GET_GUID_HOB_DATA (GuidHob);
-    if (!DebugHob->Control.Flags.DxeDebugEnabled) {
-      return;
+      DebugHob = (DEBUGGER_CONTROL_HOB *)GET_GUID_HOB_DATA (GuidHob);
+      if (!DebugHob->Control.Flags.DxeDebugEnabled) {
+        return;
+      }
     }
 
     if (gBS == NULL) {
@@ -753,7 +761,7 @@ InitializeDebugAgent (
       DxeDebugSetupCallbacks ();
     }
   } else {
-    DEBUG ((DEBUG_ERROR, "%a: Unsupported call to DxeCore DebugAgent (%8.8x)\n", __FUNCTION__, InitFlag));
+    DEBUG ((DEBUG_ERROR, "%a: Unsupported call to DxeCore DebugAgent (0x%x)\n", __FUNCTION__, InitFlag));
   }
 
   DEBUG ((DEBUG_INFO, "%a: Exit.\n", __FUNCTION__));

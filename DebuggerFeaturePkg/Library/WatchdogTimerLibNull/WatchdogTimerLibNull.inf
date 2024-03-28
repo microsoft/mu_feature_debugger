@@ -13,7 +13,7 @@
   FILE_GUID                      = 481BCE09-2607-40FF-B113-540EF33EBC88
   MODULE_TYPE                    = BASE
   VERSION_STRING                 = 1.0
-  LIBRARY_CLASS                  = WatchdogTimerLib|DXE_DRIVER UEFI_APPLICATION DXE_CORE
+  LIBRARY_CLASS                  = WatchdogTimerLib
 
 [Sources]
   WatchdogTimerLibNull.c

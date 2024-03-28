@@ -30,7 +30,6 @@
   DebuggerFeaturePkg/DebuggerFeaturePkg.dec
 
 [LibraryClasses]
-  BaseMemoryLib
   PeimEntryPoint
   DebugLib
   HobLib

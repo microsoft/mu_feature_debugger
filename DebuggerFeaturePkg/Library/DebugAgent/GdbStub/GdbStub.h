@@ -34,6 +34,8 @@ typedef struct _GDB_REGISTER_OFFSET_DATA {
   CONST CHAR8    *Type;
 } GDB_REGISTER_OFFSET_DATA;
 
+// Indicates the register is not available in system context and reads will result
+// in all 0's and writes will be ignored.
 #define REG_NOT_PRESENT  (0xFFFFFFFF)
 
 extern GDB_REGISTER_OFFSET_DATA  gRegisterOffsets[];

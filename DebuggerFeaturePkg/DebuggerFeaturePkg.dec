@@ -50,3 +50,7 @@
   ## Controls the timeout for the initial breakpoint before continuing. 0 Indicates
   #  that the initial breakpoint should not timeout.
   DebuggerFeaturePkgTokenSpaceGuid.PcdInitialBreakpointTimeoutMs|30000|UINT64|0x00000002
+
+  ## Forcibly enables the debugger with a default configuration depending on the
+  #  phase implementation.
+  DebuggerFeaturePkgTokenSpaceGuid.PcdForceEnableDebugger|FALSE|BOOLEAN|0x00000003

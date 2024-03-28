@@ -19,6 +19,10 @@
 #include "DebugAgent.h"
 #include "GdbStub.h"
 
+// NOTE: REG_NOT_PRESENT is used because GDB requires these registers even though
+//       they are not accessible in the system context, and are not likely to be
+//       important for UEFI debugging.
+
 GDB_REGISTER_OFFSET_DATA  gRegisterOffsets[] = {
   { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, Rax),    8,       "rax",    "int64" },
   { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, Rbx),    8,       "rbx",    "int64" },
@@ -37,7 +41,7 @@ GDB_REGISTER_OFFSET_DATA  gRegisterOffsets[] = {
   { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, R14),    8,       "r14",    "int64" },
   { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, R15),    8,       "r15",    "int64" },
   { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, Rip),    8,       "rip",    "int64" },
-  { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, Rflags), 8,       "eflags", "int64" }, // GDB require eflags, tuncate.
+  { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, Rflags), 8,       "eflags", "int64" },
   { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, Cs),     4,       "cs",     "int32" },
   { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, Ss),     4,       "ss",     "int32" },
   { OFFSET_OF (EFI_SYSTEM_CONTEXT_X64, Ds),     4,       "ds",     "int32" },
