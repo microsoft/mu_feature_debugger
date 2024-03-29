@@ -55,3 +55,4 @@
 
 [Components.X64, Components.AARCH64]
   DebuggerFeaturePkg/Library/DebugAgent/DebugAgentDxe.inf
+  DebuggerFeaturePkg/Library/DebugAgent/DebugAgentMm.inf

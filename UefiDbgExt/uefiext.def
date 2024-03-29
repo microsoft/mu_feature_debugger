@@ -24,7 +24,8 @@ EXPORTS
     protocols
     handles
     linkedlist
-    error
+    efierror
+    init
 
 ;--------------------------------------------------------------------
 ;

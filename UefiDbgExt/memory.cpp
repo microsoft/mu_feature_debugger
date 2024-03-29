@@ -68,10 +68,8 @@ memorymap (
   PCSTR           args
   )
 {
-  ULONG64  Address;
   ULONG64  HeadAddress;
   ULONG64  MemoryEntry;
-  ULONG    ListEntryOffset;
   ULONG    Type;
   UINT64   Start;
   UINT64   End;

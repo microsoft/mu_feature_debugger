@@ -65,6 +65,7 @@ help (
   dprintf (
     "Help for uefiext.dll\n"
     "  help                - Shows this help\n"
+    "  init                - Detects and initializes windbg for debugging UEFI.\n"
     "  findall             - Attempts to detect environment and load all modules\n"
     "  findmodule          - Find the currently running module\n"
     "  memorymap           - Prints the current memory map\n"
@@ -75,7 +76,7 @@ help (
     "  protocols           - Lists the protocols from the protocol list.\n"
     "  handles             - Prints the handles list.\n"
     "  linkedlist          - Parses a UEFI style linked list of entries.\n"
-    "  error               - Translates an EFI error code.\n"
+    "  efierror            - Translates an EFI error code.\n"
     );
 
   EXIT_API ();
@@ -83,23 +84,31 @@ help (
   return S_OK;
 }
 
-VOID
-PrintGuid (
-  GUID  Guid
+HRESULT CALLBACK
+init (
+  PDEBUG_CLIENT4  Client,
+  PCSTR           args
   )
 {
-  dprintf (
-    "{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
-    Guid.Data1,
-    Guid.Data2,
-    Guid.Data3,
-    Guid.Data4[0],
-    Guid.Data4[1],
-    Guid.Data4[2],
-    Guid.Data4[3],
-    Guid.Data4[4],
-    Guid.Data4[5],
-    Guid.Data4[6],
-    Guid.Data4[7]
-    );
+  ULONG  TargetClass = 0;
+  ULONG  TargetQual  = 0;
+
+  INIT_API ();
+
+  UNREFERENCED_PARAMETER (args);
+
+  dprintf ("Initializing UEFI Debugger Extension\n");
+  g_ExtControl->GetDebuggeeType (&TargetClass, &TargetQual);
+  if ((TargetClass == DEBUG_CLASS_KERNEL) && (TargetQual == DEBUG_KERNEL_EXDI_DRIVER)) {
+    dprintf ("EXDI Connection, scanning for images.\n");
+    g_ExtControl->Execute (
+                    DEBUG_OUTCTL_ALL_CLIENTS,
+                    "!findall",
+                    DEBUG_EXECUTE_DEFAULT
+                    );
+  }
+
+  EXIT_API ();
+
+  return S_OK;
 }

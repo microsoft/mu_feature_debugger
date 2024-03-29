@@ -166,7 +166,7 @@ linkedlist (
 }
 
 HRESULT CALLBACK
-error (
+efierror (
   PDEBUG_CLIENT4  Client,
   PCSTR           args
   )
