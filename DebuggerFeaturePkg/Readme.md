@@ -141,7 +141,13 @@ but currently windbg will not be able to resolve GCC symbols.
 This package contains an [Windbg Extension for Windbg](../UefiDbgExt/) that
 can be used to access UEFI structures and interact with the UEFI software debugger
 in a more intuitive way. See the the extensions [readme.md](../UefiDbgExt/readme.md)
-formore details.
+for more details.
+
+It is advised to configure `!uefiext.init` as a startup action in
+Settings->Debugging Settings->Startup. This will attempt to detect and automatically
+resolve initial symbols when connecting.
+
+![Windbgx Extension Startup](./Docs/Images/windbgx_startup.png)
 
 ### Serial to TCP forwarding
 

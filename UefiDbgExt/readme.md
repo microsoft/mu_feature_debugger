@@ -51,6 +51,15 @@ commands. To see its commands, use the help command to get started.
 One particularly useful instruction will be the `!uefiext.findall` instruction
 to load the needed modules.
 
+## Automatic Initialization
+
+It is advised to configure `!uefiext.init` as a startup action in
+Settings->Debugging Settings->Startup. This will attempt to detect a UEFI environment
+and automatically resolve initial symbols when connecting. This will do nothing
+when debugging other environments.
+
+![Windbgx Extension Startup](../DebuggerFeaturePkg/Docs/Images/windbgx_startup.png)
+
 ## Design
 
 Windbg debug extensions allow for programmatic decoding and outputting of data
