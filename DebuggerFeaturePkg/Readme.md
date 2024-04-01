@@ -250,21 +250,6 @@ the following commands. Many of these commands are abstracted by the
 These can be manually run from Windbg by using `.exdicmd target:0:COMMAND` where
 COMMAND is desired the command from above.
 
-## WORK (TODO: transfer to github issues)
-
-### Issues
-
-- Setting registers isn't working quite right in windbg, the command works but windbg
-isn't sending it for some reason. Still???
-- Single step is broken starting from hard breakpoint in windbg
-
-### Features
-
-- Implement variable access
-- Implement MSR write
-- Standalone implementation
-- PEI implementation
-
 ## Copyright
 
 Copyright (C) Microsoft Corporation. All rights reserved.

@@ -748,7 +748,6 @@ InitializeDebugAgent (
     //
 
     if (DebugHob->Control.Flags.InitialBreakpoint) {
-      // GdbBreak();
       DebuggerInitialBreakpoint (DebugHob->InitialBreakpointTimeout);
     }
   } else if (InitFlag == 0) {
