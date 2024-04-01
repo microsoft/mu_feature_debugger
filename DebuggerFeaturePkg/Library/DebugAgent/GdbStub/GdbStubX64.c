@@ -100,3 +100,48 @@ GdbReadMsr (
   MsrValue  = AsmReadMsr64 ((UINT32)MsrNumber);
   AsciiSPrint (Response, BufferLength, "MSR %08x = %016x\n\r", MsrNumber, MsrValue);
 }
+
+/**
+  Dumps system registers.
+
+  @param[in]  Cmd           The command string.
+  @param[out] Response      The buffer to write the response to.
+  @param[in]  BufferLength  The length of the provided buffer.
+
+**/
+VOID
+GdbDumpSystemRegisters (
+  IN CHAR8   *Cmd,
+  OUT CHAR8  *Response,
+  IN UINTN   BufferLength
+  )
+{
+  IA32_DESCRIPTOR  Gdtr;
+  IA32_DESCRIPTOR  Idtr;
+
+  //
+  // Gather registers.
+  //
+
+  AsmReadIdtr (&Idtr);
+  AsmReadGdtr (&Gdtr);
+
+  //
+  // Print registers.
+  //
+
+  AsciiSPrint (
+    Response,
+    BufferLength,
+    "\r\n",
+    "IDT: %llx : %x\n\r"
+    "GDT: %llx : %x\n\r"
+    "TR:  %x\n\r"
+    "\r\n",
+    Idtr.Base,
+    Idtr.Limit,
+    Gdtr.Base,
+    Gdtr.Limit,
+    AsmReadTr ()
+    );
+}

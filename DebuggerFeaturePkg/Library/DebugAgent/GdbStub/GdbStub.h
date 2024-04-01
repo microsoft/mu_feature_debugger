@@ -59,4 +59,11 @@ GdbReadMsr (
   IN UINTN   BufferLength
   );
 
+VOID
+GdbDumpSystemRegisters (
+  IN CHAR8   *Cmd,
+  OUT CHAR8  *Response,
+  IN UINTN   BufferLength
+  );
+
 #endif
