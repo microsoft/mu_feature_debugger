@@ -14,7 +14,8 @@ This repository is part of Project Mu. Please see `Project Mu <https://microsoft
 
 This Debugger feature repo contains tools and UEFI code to enable debugging UEFI
 implementations through various scenarios and configurations of debugger software
-and backends.
+and backends. This repo and contributions to it must adhere to the
+`Microsoft Open Source Code of Conduct <https://opensource.microsoft.com/codeofconduct/>`_
 
 Detailed Feature Information
 ============================
@@ -54,7 +55,8 @@ Issues
 ======
 
 Please open any issues in the Project Mu GitHub tracker. `More
-Details <https://microsoft.github.io/mu/How/contributing/>`_
+Details <https://microsoft.github.io/mu/How/contributing/>`_ For Security Issues,
+refer to `SECURITY.md <SECURITY.md>`_.
 
 Contributing Code or Docs
 =========================
@@ -84,8 +86,8 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 .. CoreCI
 
 .. _Windows_VS: https://dev.azure.com/projectmu/mu/_build/
-.. |WindowsCiBuild| image:: https://img.shields.io/azure-devops/tests/projectmu/mu/121.svg
-.. |WindowsCiTest| image:: https://img.shields.io/azure-devops/tests/projectmu/mu/121.svg
+.. |WindowsCiBuild| image:: https://img.shields.io/badge/coverage-coming_soon-blue
+.. |WindowsCiTest| image:: https://img.shields.io/badge/coverage-coming_soon-blue
 .. |WindowsCiCoverage| image:: https://img.shields.io/badge/coverage-coming_soon-blue
 
 .. _Ubuntu_GCC5: https://dev.azure.com/projectmu/mu/_build/
