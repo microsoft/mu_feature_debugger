@@ -81,3 +81,21 @@ GdbReadMsr (
 {
   AsciiSPrint (Response, BufferLength, "Not supported for AARCH64.\n\r");
 }
+
+/**
+  Dumps system registers.
+
+  @param[in]  Cmd           The command string.
+  @param[out] Response      The buffer to write the response to.
+  @param[in]  BufferLength  The length of the provided buffer.
+
+**/
+VOID
+GdbDumpSystemRegisters (
+  IN CHAR8   *Cmd,
+  OUT CHAR8  *Response,
+  IN UINTN   BufferLength
+  )
+{
+  AsciiSPrint (Response, BufferLength, "TODO.\n\r");
+}

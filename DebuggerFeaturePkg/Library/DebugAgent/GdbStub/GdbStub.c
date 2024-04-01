@@ -484,6 +484,10 @@ ProcessMonitorCmd (
 
       break;
 
+    case 'i': // Dump system registers
+      GdbDumpSystemRegisters (&Command[1], &mScratch[0], SCRATCH_SIZE);
+      break;
+
     case 'v': // Variable Read
       AsciiSPrint (&mScratch[0], SCRATCH_SIZE, "TODO\n\r");
       break;
