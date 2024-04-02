@@ -58,7 +58,8 @@ class Settings(CiBuildSettingsManager, UpdateSettingsManager, PrEvalSettingsMana
         ''' return iterable of edk2 architectures supported by this build '''
         return (
                 "X64",
-                "AARCH64")
+                "AARCH64",
+                "IA32")
 
     def GetTargetsSupported(self):
         ''' return iterable of edk2 target tags supported by this build '''
