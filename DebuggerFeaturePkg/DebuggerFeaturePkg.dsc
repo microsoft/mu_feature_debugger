@@ -33,6 +33,7 @@
   TimerLib|MdePkg/Library/BaseTimerLibNullTemplate/BaseTimerLibNullTemplate.inf
   DeviceStateLib|MdeModulePkg/Library/DeviceStateLib/DeviceStateLib.inf
   RegisterFilterLib|MdePkg/Library/RegisterFilterLibNull/RegisterFilterLibNull.inf
+  NULL|MdePkg/Library/StackCheckLibNull/StackCheckLibNull.inf
 
   DebugTransportLib|DebuggerFeaturePkg/Library/DebugTransportSerialLib/DebugTransportSerialLib.inf
   WatchdogTimerLib|DebuggerFeaturePkg/Library/WatchdogTimerLibNull/WatchdogTimerLibNull.inf
@@ -42,10 +43,6 @@
   MemoryAllocationLib|MdePkg/Library/PeiMemoryAllocationLib/PeiMemoryAllocationLib.inf
   PeiServicesLib|MdePkg/Library/PeiServicesLib/PeiServicesLib.inf
   PeiServicesTablePointerLib|MdePkg/Library/PeiServicesTablePointerLib/PeiServicesTablePointerLib.inf
-
-[LibraryClasses.X64]
-  RngLib|MdePkg/Library/BaseRngLib/BaseRngLib.inf
-  NULL|MdePkg/Library/StackCheckLibNull/StackCheckLibNull.inf
 
 [Components]
   DebuggerFeaturePkg/DebugConfigPei/DebugConfigPei.inf
