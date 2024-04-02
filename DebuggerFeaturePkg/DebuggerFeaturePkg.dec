@@ -1,0 +1,56 @@
+## @file
+#
+# This Package provides all definitions and library instances, which are
+# defined and created by the Microsoft debugger 3 package.
+#
+# Copyright (c) Microsoft Corporation. All rights reserved.
+##
+
+[Defines]
+  DEC_SPECIFICATION              = 1.27
+  PACKAGE_NAME                   = DebuggerFeaturePkg
+  PACKAGE_GUID                   = c41565b5-3e9c-472b-ba87-0f082cc87e1b
+  PACKAGE_VERSION                = 1.00
+
+[Includes]
+  Include
+
+[LibraryClasses]
+
+  ## @library class for DebugTransportLib
+  #
+  DebugTransportLib|Include/Library/DebugTransportLib.h
+
+  ## @library class for WatchdogTimerLib
+  #
+  WatchdogTimerLib|Include/Library/WatchdogTimerLib.h
+
+  ## @library class for TransportLogControlLib
+  #
+  TransportLogControlLib|Include/Library/TransportLogControlLib.h
+
+[Guids]
+  ## Token Space GUID
+  #  { bf004bc2-da8c-4e44-b470-d69c286d712d }
+  DebuggerFeaturePkgTokenSpaceGuid = { 0xbf004bc2, 0xda8c, 0x4e44, {0xb4, 0x70, 0xd6, 0x9c, 0x28, 0x6d, 0x71, 0x2d }}
+
+  ## Debugget Control Data Hob Guid
+  #
+  gDebuggerControlHobGuid =  { 0x96ad286c, 0xac0f, 0x4ba1, {0x97, 0x34, 0x6c, 0x9f, 0x3c, 0xad, 0x90, 0x4c }}
+
+[PcdsFixedAtBuild]
+  ## Controls the debug configuration flags.
+  # Bit 0 - Controls whether the debugger will break in on initialization.
+  # Bit 1 - Controls whether the DXE debugger is enabled.
+  # Bit 2 - Controls whether the MM debugger is enabled.
+  # Bit 3 - Controls whether the debugger runs in minimal mode. If enabled, the
+  #         debugger will avoid using protocols and depend on static linked functionality.
+  DebuggerFeaturePkgTokenSpaceGuid.PcdDebugConfigFlags|0x3|UINT32|0x00000001
+
+  ## Controls the timeout for the initial breakpoint before continuing. 0 Indicates
+  #  that the initial breakpoint should not timeout.
+  DebuggerFeaturePkgTokenSpaceGuid.PcdInitialBreakpointTimeoutMs|30000|UINT64|0x00000002
+
+  ## Forcibly enables the debugger with a default configuration depending on the
+  #  phase implementation.
+  DebuggerFeaturePkgTokenSpaceGuid.PcdForceEnableDebugger|FALSE|BOOLEAN|0x00000003

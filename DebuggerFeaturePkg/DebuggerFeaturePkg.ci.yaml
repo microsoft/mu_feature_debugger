@@ -1,0 +1,85 @@
+## @file
+# CI configuration for DebuggerFeaturePkg
+#
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+{
+    ## options defined ci/Plugin/CompilerPlugin
+    "CompilerPlugin": {
+        "DscPath": "DebuggerFeaturePkg.dsc"
+    },
+
+    ## options defined ci/Plugin/CharEncodingCheck
+    "CharEncodingCheck": {
+        "IgnoreFiles": []
+    },
+
+    ## options defined ci/Plugin/DependencyCheck
+    "DependencyCheck": {
+        "AcceptableDependencies": [
+            "DebuggerFeaturePkg/DebuggerFeaturePkg.dec",
+            "MdePkg/MdePkg.dec",
+            "MdeModulePkg/MdeModulePkg.dec",
+        ],
+        # For host based unit tests
+        "AcceptableDependencies-HOST_APPLICATION":[],
+        # For UEFI shell based apps
+        "AcceptableDependencies-UEFI_APPLICATION":[],
+        "IgnoreInf": []
+    },
+
+    ## options defined ci/Plugin/DscCompleteCheck
+    "DscCompleteCheck": {
+        "IgnoreInf": [],
+        "DscPath": "DebuggerFeaturePkg.dsc"
+    },
+
+    ## options defined ci/Plugin/GuidCheck
+    "GuidCheck": {
+        "IgnoreGuidName": [],
+        "IgnoreGuidValue": [],
+        "IgnoreFoldersAndFiles": [],
+        "IgnoreDuplicates": []
+    },
+
+    ## options defined ci/Plugin/LibraryClassCheck
+    "LibraryClassCheck": {
+        "IgnoreHeaderFile": []
+    },
+
+    ## options defined ci/Plugin/SpellCheck
+    "SpellCheck": {
+        "AuditOnly": False,          # Fails test but run in AuditOnly mode to collect log
+        "IgnoreFiles": [],           # use gitignore syntax to ignore errors in matching files
+        "ExtendWords": [             # words to extend to the dictionary for this package
+            "baddr",
+            "clsid",
+            "exdicmd",
+            "hresult",
+            "inproc",
+            "kdext",
+            "mdscr",
+            "msbuild",
+            "pdebug",
+            "pdpte",
+            "pyserial",
+            "pywin",
+            "structions",
+            "uefiext",
+            "wdbgexts",
+            "windbgx",
+            "fctrl",
+            "fioff",
+            "fiseg",
+            "fooff",
+            "foseg"],
+        "IgnoreStandardPaths": [],   # Standard Plugin defined paths that should be ignore
+        "AdditionalIncludePaths": [] # Additional paths to spell check (wildcards supported)
+    },
+
+    ## options defined .pytool/Plugin/UncrustifyCheck
+    "UncrustifyCheck": {
+        "AdditionalIncludePaths": []
+    }
+}

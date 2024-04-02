@@ -1,0 +1,62 @@
+;
+;  Assembly implementation for accessing ARM registers for MSVC.
+;
+;  Copyright (c) Microsoft Corporation.
+;  SPDX-License-Identifier: BSD-2-Clause-Patent
+;
+
+    AREA    |.text|,ALIGN=3,CODE,READONLY
+
+    EXPORT DebugReadMdscrEl1
+    EXPORT DebugWriteMdscrEl1
+    EXPORT DebugGetTCR
+    EXPORT DebugGetTTBR0BaseAddress
+
+
+DebugReadMdscrEl1 PROC
+  mrs x0, mdscr_el1
+  ret
+DebugReadMdscrEl1 ENDP
+
+
+DebugWriteMdscrEl1 PROC
+  msr mdscr_el1, x0
+  ret
+DebugWriteMdscrEl1 ENDP
+
+
+DebugGetTCR PROC
+  mrs   x1, CurrentEL
+  cmp   x1, #0x8
+  b.lt  %f1
+  b     %f2
+1
+  mrs   x0, tcr_el1
+  b     %f3
+2
+  mrs   x0, tcr_el2
+3
+  isb   sy
+  ret
+ArmGetTCR ENDP
+
+
+DebugGetTTBR0BaseAddress PROC
+  mrs   x1, CurrentEL
+  cmp   x1, #0x8
+  b.lt  %f1
+  b     %f2
+1
+  mrs   x0, ttbr0_el1
+  b     %f3
+2
+  mrs   x0, ttbr0_el2
+3
+  ldr   x1, =0xFFFFFFFFFFFF
+  and   x0, x0, x1
+  isb   sy
+  ret
+ArmGetTTBR0BaseAddress ENDP
+
+
+    END

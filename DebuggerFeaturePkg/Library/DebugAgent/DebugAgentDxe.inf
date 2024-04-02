@@ -1,0 +1,84 @@
+## @file
+#
+# The DXE implementation of the DebugAgent.
+#
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+
+[Defines]
+  INF_VERSION                    = 1.27
+  BASE_NAME                      = DxeCoreDebugAgentLib
+  FILE_GUID                      = 2747cc0d-ce6f-46ef-b589-af319b24cae8
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = DebugAgentLib | DXE_CORE UEFI_APPLICATION
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 AARCH64
+#
+
+[Sources]
+  DebugAgentDxe.c
+  DebugAgent.h
+  Breakpoint.c
+  GdbStub/GdbStub.c
+  GdbStub/GdbStub.h
+
+[Sources.AARCH64]
+  AARCH64/DebugAarch64.c
+  AARCH64/Registers.masm | MSFT
+  AARCH64/Registers.S | GCC
+  GdbStub/GdbStubAarch64.c
+
+[Sources.X64]
+  X64/DebugX64.c
+  X64/AddressCheck.c
+  X64/VirtualMemory.h
+  GdbStub/GdbStubX64.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  DebuggerFeaturePkg/DebuggerFeaturePkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+  UefiLib
+  WatchdogTimerLib
+  TimerLib
+  HobLib
+  CpuExceptionHandlerLib
+  PeCoffGetEntryPointLib
+  CacheMaintenanceLib
+  DebugPrintErrorLevelLib
+  DeviceStateLib
+  DebugTransportLib
+  TransportLogControlLib
+
+[LibraryClasses.AARCH64]
+  TimerLib # Only safe to use early in AARCH64
+
+[Protocols]
+  gEfiCpuArchProtocolGuid
+  gEfiTimerArchProtocolGuid
+  gEfiFirmwareVolume2ProtocolGuid
+  gEfiLoadedImageProtocolGuid
+  gEfiMemoryAttributeProtocolGuid
+
+[Guids]
+  gEfiEventExitBootServicesGuid
+  gDebuggerControlHobGuid
+
+[Pcd.common]
+  DebuggerFeaturePkgTokenSpaceGuid.PcdForceEnableDebugger           ## CONSUMES
+
+[BuildOptions]
+  *_*_*_CC_FLAGS  = -D BUILDING_IN_UEFI

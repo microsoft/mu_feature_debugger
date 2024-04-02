@@ -1,0 +1,23 @@
+#@file WatchdogTimerLib.h
+#
+#  This module contains code to interact with the watchdog timer.
+#
+#  Copyright (c) Microsoft Corporation.
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+
+[Defines]
+  INF_VERSION                    = 0x00010016
+  BASE_NAME                      = WatchdogTimerLibNull
+  FILE_GUID                      = 481BCE09-2607-40FF-B113-540EF33EBC88
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = WatchdogTimerLib
+
+[Sources]
+  WatchdogTimerLibNull.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  DebuggerFeaturePkg/DebuggerFeaturePkg.dec
