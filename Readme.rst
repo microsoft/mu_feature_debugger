@@ -85,12 +85,12 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 .. CoreCI
 
-.. _Windows_VS: https://dev.azure.com/projectmu/mu/_build/
-.. |WindowsCiBuild| image:: https://img.shields.io/badge/coverage-coming_soon-blue
-.. |WindowsCiTest| image:: https://img.shields.io/badge/coverage-coming_soon-blue
+.. _Windows_VS: https://dev.azure.com/projectmu/mu/_build?definitionId=171
+.. |WindowsCiBuild| image:: https://dev.azure.com/projectmu/mu/_apis/build/status%2FCI%2FFeature%20Debugger%2FMu%20Feature%20Debugger%20-%20CI%20-%20Windows%20VS?repoName=microsoft%2Fmu_feature_debugger&branchName=main
+.. |WindowsCiTest| image:: https://img.shields.io/azure-devops/tests/projectmu/mu/171.svg
 .. |WindowsCiCoverage| image:: https://img.shields.io/badge/coverage-coming_soon-blue
 
-.. _Ubuntu_GCC5: https://dev.azure.com/projectmu/mu/_build/
-.. |UbuntuCiBuild| image:: https://img.shields.io/badge/coverage-coming_soon-blue
-.. |UbuntuCiTest| image:: https://img.shields.io/badge/coverage-coming_soon-blue
+.. _Ubuntu_GCC5: https://dev.azure.com/projectmu/mu/_build?definitionId=172
+.. |UbuntuCiBuild| image:: https://dev.azure.com/projectmu/mu/_apis/build/status%2FCI%2FFeature%20Debugger%2FMu%20Feature%20Debugger%20-%20CI%20-%20Ubuntu%20GCC?repoName=microsoft%2Fmu_feature_debugger&branchName=main
+.. |UbuntuCiTest| image:: https://img.shields.io/azure-devops/tests/projectmu/mu/172.svg
 .. |UbuntuCiCoverage| image:: https://img.shields.io/badge/coverage-coming_soon-blue
