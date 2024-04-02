@@ -45,7 +45,7 @@ UINTN  DbgLogOffset = 0;
 #endif
 
 DEBUGGER_CONTROL_HOB  DefaultDebugConfig = {
-  { 0x3 },
+  .Control.AsUint32 = 0x3,
   0x300000, // Reasonable guess, timing may be inaccurate.
   0
 };

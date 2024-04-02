@@ -22,7 +22,7 @@
 CONST CHAR8  *gDebuggerInfo = "MM UEFI Debugger";
 
 DEBUGGER_CONTROL_HOB  DefaultDebugConfig = {
-  { 0x5 },
+  .Control.AsUint32 = 0x5,
   0x300000, // Reasonable guess, timing may be inaccurate.
   0
 };
