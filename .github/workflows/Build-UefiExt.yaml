@@ -29,6 +29,8 @@ jobs:
         configuration: [Debug, Release]
         platform: [x64]
     runs-on: windows-2022
+    permissions:
+      contents: write
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
