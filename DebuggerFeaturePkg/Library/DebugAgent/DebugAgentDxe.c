@@ -31,7 +31,7 @@ extern EFI_TIMER_ARCH_PROTOCOL  *gTimer;
 extern EFI_BOOT_SERVICES        mBootServices;
 extern EFI_RUNTIME_SERVICES     *gDxeCoreRT;
 
-EFI_MEMORY_ATTRIBUTE_PROTOCOL  *mMemoryAttributeProtocol = NULL;
+STATIC EFI_MEMORY_ATTRIBUTE_PROTOCOL  *mMemoryAttributeProtocol = NULL;
 
 CONST CHAR8  *gDebuggerInfo = "DXE UEFI Debugger";
 
