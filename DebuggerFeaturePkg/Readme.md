@@ -99,16 +99,17 @@ Image scanning heuristics size, and select the correct IP and port.
 Windbg can attach to the GDB port exposed by the debugger using the [Windbg EXDI
 GDB Server](https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/configuring-the-exdi-debugger-transport).
 For recent builds of windbg this can be invoked using the following command from
-and administrator prompt.
+and administrator prompt. Since only the most recent windbgx builds will have the
+configuration by default, you can provide the PathToSrvCfgFiles path as shown before
+to load the config from the included [exdiConfigData.xml](../Scripts/exdiConfigData.xml).
 
 ```cmd
-windbg.exe -noredirect -v -kx exdi:CLSID={29f9906e-9dbe-4d4b-b0fb-6acf7fb6d014},Kd=Guess,Inproc=ExdiGdbSrv.dll,DataBreaks=Exdi
+Windbgx -v -kx exdi:CLSID={29f9906e-9dbe-4d4b-b0fb-6acf7fb6d014},Kd=Guess,Inproc=ExdiGdbSrv.dll,DataBreaks=Exdi,PathToSrvCfgFiles=PATH_TO_MU_FEATURE_DEBUGGER_REPO\Scripts\
 ```
 
-In order to connect to the UEFI debugger using this method, you will need to modify
-the `exdiConfigData.xml` to have `UEFI` set for `CurrentTarget`, and customizing
-the default port for UEFI devices if required. For more details see
-[Customizing EXDI Configuration](#customizing-exdi-configuration).
+Note that this by default is configured to use the port `5555`. Also running the
+above from PowerShell might leads to issues as PowerShell will interpret the brackets
+in the guid as language components rather then passing them as arguments to Windbgx.
 
 ### Customizing EXDI Configuration
 
