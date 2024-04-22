@@ -403,8 +403,13 @@ ProcessMemoryCommand (
         return;
       }
     } else {
-      // Workaround for debugger issue.
-      if ((Address == 0) && (RangeLength < EFI_PAGE_SIZE)) {
+      //
+      // WORK AROUND: Windbg will try to read page 0 and the Windows Shared Data
+      // page, but will loop for quite some time if those do not succeed. Just
+      // return 0 so that the logic fails fast.
+      //
+
+      if (((Address == 0) || ((Address & ~EFI_PAGE_MASK) == 0xfffff78000000000llu)) && (RangeLength < EFI_PAGE_SIZE)) {
         ZeroMem (&mScratch[0], RangeLength);
       } else if (!DbgReadMemory (Address, &mScratch[0], RangeLength)) {
         SendGdbError (GDB_ERROR_BAD_MEM_ADDRESS);
