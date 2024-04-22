@@ -282,8 +282,8 @@ ProcessVCommand (
   UINT32  CommandLength
   )
 {
-  UINT8  OriginalDelimiter;
-  UINT8  DelimiterIndex;
+  UINT8   OriginalDelimiter;
+  UINT32  DelimiterIndex;
 
   // Replace the ; or ? with a terminator;
   for (DelimiterIndex = 0; DelimiterIndex < CommandLength; DelimiterIndex++) {
