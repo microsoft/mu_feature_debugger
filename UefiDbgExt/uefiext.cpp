@@ -92,6 +92,7 @@ init (
 {
   ULONG  TargetClass = 0;
   ULONG  TargetQual  = 0;
+  ULONG  Mask;
 
   INIT_API ();
 
@@ -100,6 +101,11 @@ init (
   dprintf ("Initializing UEFI Debugger Extension\n");
   g_ExtControl->GetDebuggeeType (&TargetClass, &TargetQual);
   if ((TargetClass == DEBUG_CLASS_KERNEL) && (TargetQual == DEBUG_KERNEL_EXDI_DRIVER)) {
+    // Enabled the verbose flag in the output mask. This is required for .exdicmd
+    // output.
+    Client->GetOutputMask (&Mask);
+    Client->SetOutputMask (Mask | DEBUG_OUTPUT_VERBOSE);
+
     dprintf ("EXDI Connection, scanning for images.\n");
     g_ExtControl->Execute (
                     DEBUG_OUTCTL_ALL_CLIENTS,

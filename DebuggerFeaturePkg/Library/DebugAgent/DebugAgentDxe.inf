@@ -79,6 +79,7 @@
 
 [Pcd.common]
   DebuggerFeaturePkgTokenSpaceGuid.PcdForceEnableDebugger           ## CONSUMES
+  DebuggerFeaturePkgTokenSpaceGuid.PcdEnableWindbgWorkarounds       ## CONSUMES
 
 [BuildOptions]
   *_*_*_CC_FLAGS  = -D BUILDING_IN_UEFI
