@@ -80,7 +80,7 @@ typedef enum _BREAKPOINT_REASON {
   BreakpointReasonModuleLoad,
 } BREAKPOINT_REASON;
 
-BREAKPOINT_REASON  DebuggerBreakpointReason = BreakpointReasonNone;
+extern BREAKPOINT_REASON  DebuggerBreakpointReason;
 
 //
 // Global used for debugger information.
