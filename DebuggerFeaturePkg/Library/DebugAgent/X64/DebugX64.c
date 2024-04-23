@@ -112,12 +112,17 @@ DebuggerExceptionHandler (
 
   ExceptionInfo.ArchExceptionCode = InterruptType;
 
-  if (PcdGetBool (PcdForceEnableDebugger) && (InterruptType == EXCEPT_X64_BREAKPOINT)) {
+  if (PcdGetBool (PcdEnableWindbgWorkarounds) &&
+      (InterruptType == EXCEPT_X64_BREAKPOINT) &&
+      (DebuggerBreakpointReason != BreakpointReasonNone) &&
+      (*((UINT8 *)Context->Rip) == 0xCC))
+  {
+    //
     // Windbg will act oddly when broken in on a actual INT 3 instruction, so
-    // pre-emptively step past this.
-    if (*((UINT8 *)Context->Rip) == 0xCC) {
-      Context->Rip++;
-    }
+    // preemptively step past this.
+    //
+
+    Context->Rip++;
   }
 
   // Call into the core debugger module.

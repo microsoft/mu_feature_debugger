@@ -328,7 +328,10 @@ OnLoadedImageNotification (
 
     if (AsciiStrLen (Name) == AsciiStrLen (mDbgBreakOnModuleLoadString)) {
       if (AsciiStriCmp (mDbgBreakOnModuleLoadString, Name) == 0) {
+        DebuggerBreakpointReason = BreakpointReasonModuleLoad;
         CpuBreakpoint ();
+        DebuggerBreakpointReason = BreakpointReasonNone;
+
         mDbgBreakOnModuleLoadString[0] = 0;
         break;
       }
