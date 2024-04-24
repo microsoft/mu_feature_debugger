@@ -164,8 +164,8 @@ DebuggerExceptionHandler (
       (CompareMem ((UINT8 *)Context->ELR, &ArchBreakpointInstruction[0], ArchBreakpointInstructionSize) == 0))
   {
     //
-    // Windbg will act oddly when broken in on a actual INT 3 instruction, so
-    // preemptively step past this.
+    // Windbg will act oddly when broken in on a actual debug breakpoint instruction,
+    // so preemptively step past this.
     //
     Context->ELR += ArchBreakpointInstructionSize;
   }
