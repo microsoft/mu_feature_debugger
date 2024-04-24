@@ -78,6 +78,7 @@ typedef enum _BREAKPOINT_REASON {
   BreakpointReasonNone = 0,
   BreakpointReasonInitial,
   BreakpointReasonModuleLoad,
+  BreakpointReasonDebuggerBreak,
 } BREAKPOINT_REASON;
 
 extern BREAKPOINT_REASON  DebuggerBreakpointReason;
@@ -176,6 +177,11 @@ AddSoftwareBreakpoint (
 BOOLEAN
 RemoveSoftwareBreakpoint (
   UINTN  Address
+  );
+
+VOID
+DebuggerBreak (
+  BREAKPOINT_REASON  Reason
   );
 
 //

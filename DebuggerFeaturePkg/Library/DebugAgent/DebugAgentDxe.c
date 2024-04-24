@@ -44,8 +44,6 @@ CHAR8  DbgLogBuffer[DBG_LOG_SIZE];
 UINTN  DbgLogOffset = 0;
 #endif
 
-BREAKPOINT_REASON  DebuggerBreakpointReason = BreakpointReasonNone;
-
 DEBUGGER_CONTROL_HOB  DefaultDebugConfig = {
   .Control.AsUint32 = 0x3,
   0x300000, // Reasonable guess, timing may be inaccurate.
@@ -330,10 +328,7 @@ OnLoadedImageNotification (
 
     if (AsciiStrLen (Name) == AsciiStrLen (mDbgBreakOnModuleLoadString)) {
       if (AsciiStriCmp (mDbgBreakOnModuleLoadString, Name) == 0) {
-        DebuggerBreakpointReason = BreakpointReasonModuleLoad;
-        CpuBreakpoint ();
-        DebuggerBreakpointReason = BreakpointReasonNone;
-
+        DebuggerBreak (BreakpointReasonModuleLoad);
         mDbgBreakOnModuleLoadString[0] = 0;
         break;
       }

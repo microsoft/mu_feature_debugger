@@ -1123,7 +1123,7 @@ DebuggerPollInput (
 
     // Check for the break character CTRL-C.
     if (Character == 0x3) {
-      CpuBreakpoint ();
+      DebuggerBreak (BreakpointReasonDebuggerBreak);
     }
   }
 }
@@ -1140,10 +1140,8 @@ DebuggerInitialBreakpoint (
   UINT64  Timeout
   )
 {
-  mNextBreakpointTimeout   = Timeout;
-  DebuggerBreakpointReason = BreakpointReasonInitial;
-  CpuBreakpoint ();
-  DebuggerBreakpointReason = BreakpointReasonNone;
+  mNextBreakpointTimeout = Timeout;
+  DebuggerBreak (BreakpointReasonInitial);
 }
 
 /**
