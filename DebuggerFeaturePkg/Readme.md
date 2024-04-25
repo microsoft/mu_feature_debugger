@@ -90,7 +90,8 @@ for more information.
 You can attach to the UEFI debugger from the windbgx UI. Press Ctrl-K to get to
 the kernel debugger options, and click on the EXDI tab. From there you can can select
 the UEFI option, the appropriate architecture, Windows (not used), "None" for
-Image scanning heuristics size, and select the correct IP and port.
+Image scanning heuristics size, and select the correct IP and port. This requires
+Windbgx version 1.2404.22002.0 or newer.
 
 ![Windbgx EXDI UEFI](./Docs/Images/windbgx_uefi.png)
 

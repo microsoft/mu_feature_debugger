@@ -11,21 +11,23 @@ EXPORTS
 ;--------------------------------------------------------------------
 ; These are the extensions exported by dll
 ;--------------------------------------------------------------------
-    help
-    memorymap
-    findmodule
-    loadmodules
+    advlog
+    efierror
     findall
-    setenv
+    findmodule
+    handles
+    help
     hobs
+    info
+    init
+    linkedlist
+    loadmodules
+    memorymap
     modulebreak
+    protocols
     readmsr
     readvar
-    protocols
-    handles
-    linkedlist
-    efierror
-    init
+    setenv
 
 ;--------------------------------------------------------------------
 ;
