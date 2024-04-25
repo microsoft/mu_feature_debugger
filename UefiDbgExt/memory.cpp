@@ -245,7 +245,6 @@ advlog (
   ULONG                             Offset;
   ULONG                             End;
   ADVANCED_LOGGER_MESSAGE_ENTRY_V2  *Entry;
-  CHAR                              Temp;
 
   // NOTE: This implementation is a crude first past, The following should be done
   // in the future.
@@ -293,7 +292,6 @@ advlog (
 
   dprintf ("Version:  %d\n", Version);
   dprintf ("Size:     0x%x bytes\n", LogBufferSize);
-  dprintf ("\n------------------------------------------------------------------------------\n");
 
   if (LogBufferSize == 0) {
     dprintf ("Bad log buffer size!\n");
@@ -327,6 +325,7 @@ advlog (
     Offset = (ULONG)(EntryAddress - InfoAddress);
     End    = (ULONG)(EndAddress - InfoAddress);
 
+    dprintf ("\n------------------------------------------------------------------------------\n");
     while (Offset < End) {
       Entry = (ADVANCED_LOGGER_MESSAGE_ENTRY_V2 *)(LogBuffer + Offset);
       if (Entry->Signature != 0x324d4c41) {
@@ -334,19 +333,19 @@ advlog (
         break;
       }
 
-      Temp = LogBuffer[Offset+Entry->MessageOffset+Entry->MessageLen];
-
-      LogBuffer[Offset+Entry->MessageOffset+Entry->MessageLen] = 0;
+      ULONG  StringEnd = Offset + Entry->MessageOffset + Entry->MessageLen;
+      CHAR   Temp      = LogBuffer[StringEnd];
+      LogBuffer[StringEnd] = 0;
       dprintf ("%s", LogBuffer + Offset + Entry->MessageOffset);
-      LogBuffer[Offset+Entry->MessageOffset+Entry->MessageLen] = Temp;
+      LogBuffer[StringEnd] = Temp;
 
       Offset = ALIGN_UP (Offset + Entry->MessageOffset + Entry->MessageLen, 8);
     }
+
+    dprintf ("\n------------------------------------------------------------------------------\n");
   } else {
     dprintf ("\nVersion not implemented in debug extension!\n");
   }
-
-  dprintf ("\n------------------------------------------------------------------------------\n");
 
   Result = S_OK;
 

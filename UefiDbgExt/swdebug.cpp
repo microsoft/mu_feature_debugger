@@ -69,7 +69,7 @@ readmsr (
     dprintf ("Must provide MSR index in HEX!");
   }
 
-  sprintf_s (Command, sizeof (Command), ".exdicmd target:0:\"m%s\"", args);
+  sprintf_s (Command, sizeof (Command), ".exdicmd target:0:m%s", args);
   g_ExtControl->Execute (
                   DEBUG_OUTCTL_ALL_CLIENTS,
                   Command,
@@ -94,7 +94,7 @@ readvar (
     dprintf ("Must provide variable name!");
   }
 
-  sprintf_s (Command, sizeof (Command), ".exdicmd target:*:\"v%s\"", args);
+  sprintf_s (Command, sizeof (Command), ".exdicmd target:*:v%s", args);
   g_ExtControl->Execute (
                   DEBUG_OUTCTL_ALL_CLIENTS,
                   Command,
