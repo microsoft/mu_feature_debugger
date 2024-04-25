@@ -54,3 +54,7 @@
   ## Forcibly enables the debugger with a default configuration depending on the
   #  phase implementation.
   DebuggerFeaturePkgTokenSpaceGuid.PcdForceEnableDebugger|FALSE|BOOLEAN|0x00000003
+
+  ## Enabled work-arounds in the debugger for bugs in windbg's GDB implementation.
+  #  This should not break GDB debuggers, but may cause slightly unexpected behavior.
+  DebuggerFeaturePkgTokenSpaceGuid.PcdEnableWindbgWorkarounds|TRUE|BOOLEAN|0x00000004

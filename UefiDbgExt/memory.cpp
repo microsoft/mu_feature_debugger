@@ -212,3 +212,148 @@ hobs (
   EXIT_API ();
   return S_OK;
 }
+
+#pragma pack (push, 1)
+typedef struct {
+  UINT32    Signature;          // Signature
+  UINT8     MajorVersion;       // Major version of advanced logger message structure
+  UINT8     MinorVersion;       // Minor version of advanced logger message structure
+  UINT32    DebugLevel;         // Debug Level
+  UINT64    TimeStamp;          // Time stamp
+  UINT16    Phase;              // Boot phase that produced this message entry
+  UINT16    MessageLen;         // Number of bytes in Message
+  UINT16    MessageOffset;      // Offset of Message from start of structure,
+                                // used to calculate the address of the Message
+  // CHAR      MessageText[];      // Message Text
+} ADVANCED_LOGGER_MESSAGE_ENTRY_V2;
+#pragma pack (pop)
+
+HRESULT CALLBACK
+advlog (
+  PDEBUG_CLIENT4  Client,
+  PCSTR           args
+  )
+{
+  ULONG64                           InfoAddress;
+  ULONG64                           EntryAddress;
+  ULONG64                           EndAddress;
+  ULONG                             LogBufferSize;
+  UINT16                            Version;
+  ULONG                             BytesRead;
+  HRESULT                           Result;
+  CHAR                              *LogBuffer = NULL;
+  ULONG                             Offset;
+  ULONG                             End;
+  ADVANCED_LOGGER_MESSAGE_ENTRY_V2  *Entry;
+
+  // NOTE: This implementation is a crude first past, The following should be done
+  // in the future.
+  //
+  // 1. Handle circular buffer.
+  // 2. Handle interleaved multipart messages.
+  // 3. More robust error checking.
+  // 4. Print metadata and allow filtering.
+  //
+
+  INIT_API ();
+
+  // If no valid input address was give, find the symbol.
+  if (GetExpressionEx (args, &InfoAddress, &args) == FALSE) {
+    InfoAddress = GetExpression ("mLoggerInfo");
+    if (InfoAddress == NULL) {
+      dprintf ("Failed to find mLoggerInfo!\n");
+      Result = ERROR_NOT_FOUND;
+      goto Exit;
+    }
+
+    if (!ReadPointer (InfoAddress, &InfoAddress)) {
+      dprintf ("Failed to read mLoggerInfo!\n");
+      Result = ERROR_NOT_FOUND;
+      goto Exit;
+    }
+  }
+
+  if (InfoAddress == NULL) {
+    dprintf ("Logger info is NULL!\n");
+    Result = ERROR_NOT_FOUND;
+    goto Exit;
+  }
+
+  GetFieldValue (InfoAddress, "ADVANCED_LOGGER_INFO", "Version", Version);
+  GetFieldValue (InfoAddress, "ADVANCED_LOGGER_INFO", "LogBufferSize", LogBufferSize);
+
+  g_ExtControl->ControlledOutput (
+                  DEBUG_OUTCTL_AMBIENT_DML,
+                  DEBUG_OUTPUT_NORMAL,
+                  "Header:   <exec cmd=\"dt ADVANCED_LOGGER_INFO %016I64x\">%x</exec>\n",
+                  InfoAddress,
+                  InfoAddress
+                  );
+
+  dprintf ("Version:  %d\n", Version);
+  dprintf ("Size:     0x%x bytes\n", LogBufferSize);
+
+  if (LogBufferSize == 0) {
+    dprintf ("Bad log buffer size!\n");
+    Result = ERROR_NOT_SUPPORTED;
+    goto Exit;
+  }
+
+  if (Version == 4) {
+    GetFieldValue (InfoAddress, "ADVANCED_LOGGER_INFO", "LogBuffer", EntryAddress);
+    GetFieldValue (InfoAddress, "ADVANCED_LOGGER_INFO", "LogCurrent", EndAddress);
+    if (EndAddress < EntryAddress) {
+      dprintf ("Looped logs not yet implemented in extension!\n");
+      Result = ERROR_NOT_SUPPORTED;
+      goto Exit;
+    } else {
+      // non-loop optimization, only download through the last message.
+      LogBufferSize = min (LogBufferSize, (ULONG)(EndAddress - InfoAddress));
+    }
+
+    LogBuffer = (CHAR *)malloc (LogBufferSize);
+
+    // Output() forces IO flush to inform user.
+    g_ExtControl->Output (DEBUG_OUTPUT_NORMAL, "Reading log (0x%x bytes) ... \n", LogBufferSize);
+    ReadMemory (InfoAddress, LogBuffer, LogBufferSize, &BytesRead);
+    if (BytesRead != LogBufferSize) {
+      dprintf ("Failed to read log memory!\n");
+      Result = ERROR_BAD_LENGTH;
+      goto Exit;
+    }
+
+    Offset = (ULONG)(EntryAddress - InfoAddress);
+    End    = (ULONG)(EndAddress - InfoAddress);
+
+    dprintf ("\n------------------------------------------------------------------------------\n");
+    while (Offset < End) {
+      Entry = (ADVANCED_LOGGER_MESSAGE_ENTRY_V2 *)(LogBuffer + Offset);
+      if (Entry->Signature != 0x324d4c41) {
+        dprintf ("\nBad message signature!!\n");
+        break;
+      }
+
+      ULONG  StringEnd = Offset + Entry->MessageOffset + Entry->MessageLen;
+      CHAR   Temp      = LogBuffer[StringEnd];
+      LogBuffer[StringEnd] = 0;
+      dprintf ("%s", LogBuffer + Offset + Entry->MessageOffset);
+      LogBuffer[StringEnd] = Temp;
+
+      Offset = ALIGN_UP (Offset + Entry->MessageOffset + Entry->MessageLen, 8);
+    }
+
+    dprintf ("\n------------------------------------------------------------------------------\n");
+  } else {
+    dprintf ("\nVersion not implemented in debug extension!\n");
+  }
+
+  Result = S_OK;
+
+Exit:
+  if (LogBuffer != NULL) {
+    free (LogBuffer);
+  }
+
+  EXIT_API ();
+  return Result;
+}

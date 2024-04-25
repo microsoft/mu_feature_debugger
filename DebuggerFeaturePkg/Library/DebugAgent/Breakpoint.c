@@ -25,6 +25,8 @@ typedef struct _BREAKPOINT_INFO {
 
 BREAKPOINT_INFO  mBreakpoints[MAX_BREAKPOINTS];
 
+BREAKPOINT_REASON  DebuggerBreakpointReason = BreakpointReasonNone;
+
 /**
   Adds a software breakpoint as the specific address.
 
@@ -95,4 +97,20 @@ RemoveSoftwareBreakpoint (
 
   // Not found.
   return FALSE;
+}
+
+/**
+  Immediately breaks into the debugger.
+
+  @param[in]  Reason    The reason for the debug break.
+
+**/
+VOID
+DebuggerBreak (
+  BREAKPOINT_REASON  Reason
+  )
+{
+  DebuggerBreakpointReason = Reason;
+  CpuBreakpoint ();
+  DebuggerBreakpointReason = BreakpointReasonNone;
 }

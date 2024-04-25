@@ -22,6 +22,7 @@
 #include <Library/CpuExceptionHandlerLib.h>
 #include <Library/DebugTransportLib.h>
 #include <Library/HobLib.h>
+#include <Library/ResetSystemLib.h>
 
 #include "DebugAgent.h"
 
@@ -328,7 +329,7 @@ OnLoadedImageNotification (
 
     if (AsciiStrLen (Name) == AsciiStrLen (mDbgBreakOnModuleLoadString)) {
       if (AsciiStriCmp (mDbgBreakOnModuleLoadString, Name) == 0) {
-        CpuBreakpoint ();
+        DebuggerBreak (BreakpointReasonModuleLoad);
         mDbgBreakOnModuleLoadString[0] = 0;
         break;
       }
@@ -410,11 +411,7 @@ DebugReboot (
   VOID
   )
 {
-  if ((gDxeCoreRT == NULL) || (gDxeCoreRT->ResetSystem == NULL)) {
-    return;
-  }
-
-  gDxeCoreRT->ResetSystem (EfiResetCold, EFI_SUCCESS, 0, NULL);
+  ResetCold ();
 }
 
 /**

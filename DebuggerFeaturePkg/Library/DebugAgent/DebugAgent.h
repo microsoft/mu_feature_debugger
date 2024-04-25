@@ -71,10 +71,17 @@ extern UINTN   ArchBreakpointInstructionSize;
 extern UINT32  ArchExceptionTypes[];
 
 //
-// Global used for early use of performance counter
+// Global used to track debugger invoked breakpoint.
 //
 
-extern UINT64  gPerformanceCounterFreq;
+typedef enum _BREAKPOINT_REASON {
+  BreakpointReasonNone = 0,
+  BreakpointReasonInitial,
+  BreakpointReasonModuleLoad,
+  BreakpointReasonDebuggerBreak,
+} BREAKPOINT_REASON;
+
+extern BREAKPOINT_REASON  DebuggerBreakpointReason;
 
 //
 // Global used for debugger information.
@@ -170,6 +177,11 @@ AddSoftwareBreakpoint (
 BOOLEAN
 RemoveSoftwareBreakpoint (
   UINTN  Address
+  );
+
+VOID
+DebuggerBreak (
+  BREAKPOINT_REASON  Reason
   );
 
 //

@@ -23,6 +23,9 @@ Abstract:
 #define PAGE_SIZE  (0x1000)
 #define PAGE_ALIGN_DOWN(_ptr)  (_ptr & ~(PAGE_SIZE - 1))
 
+#define ALIGN_UP(address, alignment) \
+    (((address + alignment - 1) / alignment) * alignment)
+
 //
 // EFI environment information.
 //

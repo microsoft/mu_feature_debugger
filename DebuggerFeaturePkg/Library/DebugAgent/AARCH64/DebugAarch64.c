@@ -158,6 +158,18 @@ DebuggerExceptionHandler (
 
   ExceptionInfo.ArchExceptionCode = ExceptionType;
 
+  if (PcdGetBool (PcdEnableWindbgWorkarounds) &&
+      (ExceptionType == 0x3c) &&
+      (DebuggerBreakpointReason != BreakpointReasonNone) &&
+      (CompareMem ((UINT8 *)Context->ELR, &ArchBreakpointInstruction[0], ArchBreakpointInstructionSize) == 0))
+  {
+    //
+    // Windbg will act oddly when broken in on a actual debug breakpoint instruction,
+    // so preemptively step past this.
+    //
+    Context->ELR += ArchBreakpointInstructionSize;
+  }
+
   ReportEntryToDebugger (&ExceptionInfo, SystemContext);
 
   //
