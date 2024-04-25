@@ -17,6 +17,24 @@ Abstract:
 #include "uefiext.h"
 
 HRESULT CALLBACK
+info (
+  PDEBUG_CLIENT4  Client,
+  PCSTR           args
+  )
+{
+  INIT_API ();
+
+  g_ExtControl->Execute (
+                  DEBUG_OUTCTL_ALL_CLIENTS,
+                  ".exdicmd target:0:?",
+                  DEBUG_EXECUTE_DEFAULT
+                  );
+
+  EXIT_API ();
+  return S_OK;
+}
+
+HRESULT CALLBACK
 modulebreak (
   PDEBUG_CLIENT4  Client,
   PCSTR           args

@@ -64,19 +64,27 @@ help (
 
   dprintf (
     "Help for uefiext.dll\n"
+    "\nBasic Commands:\n"
     "  help                - Shows this help\n"
     "  init                - Detects and initializes windbg for debugging UEFI.\n"
+    "  setenv              - Set the extensions environment mode\n"
+    "\nModule Discovery:\n"
     "  findall             - Attempts to detect environment and load all modules\n"
     "  findmodule          - Find the currently running module\n"
-    "  memorymap           - Prints the current memory map\n"
     "  loadmodules         - Find and loads symbols for all modules in the debug list\n"
-    "  setenv              - Set the extensions environment mode\n"
+    "\nData Parsing:\n"
+    "  memorymap           - Prints the current memory map\n"
     "  hobs                - Enumerates the hand off blocks\n"
-    "  modulebreak         - Sets a break on load for the provided module. e.g. 'shell'\n"
     "  protocols           - Lists the protocols from the protocol list.\n"
     "  handles             - Prints the handles list.\n"
     "  linkedlist          - Parses a UEFI style linked list of entries.\n"
     "  efierror            - Translates an EFI error code.\n"
+    "  advlog              - Prints the advanced logger memory log.\n"
+    "\nUEFI Debugger:\n"
+    "  info                - Queries information about the UEFI debugger\n"
+    "  modulebreak         - Sets a break on load for the provided module. e.g. 'shell'\n"
+    "  readmsr             - Reads a MSR value (x86 only)\n"
+    "  readvar             - reads a UEFI variable\n"
     );
 
   EXIT_API ();
