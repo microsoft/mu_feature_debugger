@@ -62,6 +62,7 @@
   DeviceStateLib
   DebugTransportLib
   TransportLogControlLib
+  HwResetSystemLib
 
 [LibraryClasses.AARCH64]
   TimerLib # Only safe to use early in AARCH64
