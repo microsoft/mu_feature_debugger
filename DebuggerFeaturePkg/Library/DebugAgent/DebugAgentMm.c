@@ -36,8 +36,6 @@ CHAR8  DbgLogBuffer[DBG_LOG_SIZE];
 UINTN  DbgLogOffset = 0;
 #endif
 
-BREAKPOINT_REASON  DebuggerBreakpointReason = BreakpointReasonNone;
-
 //
 // MM externs. Because of the flat nature of MM, this must be statically linked
 // and is not yet part of a library.
