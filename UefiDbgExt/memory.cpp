@@ -213,32 +213,47 @@ hobs (
   return S_OK;
 }
 
+#pragma pack (push, 1)
+typedef struct {
+  UINT32    Signature;          // Signature
+  UINT8     MajorVersion;       // Major version of advanced logger message structure
+  UINT8     MinorVersion;       // Minor version of advanced logger message structure
+  UINT32    DebugLevel;         // Debug Level
+  UINT64    TimeStamp;          // Time stamp
+  UINT16    Phase;              // Boot phase that produced this message entry
+  UINT16    MessageLen;         // Number of bytes in Message
+  UINT16    MessageOffset;      // Offset of Message from start of structure,
+                                // used to calculate the address of the Message
+  // CHAR      MessageText[];      // Message Text
+} ADVANCED_LOGGER_MESSAGE_ENTRY_V2;
+#pragma pack (pop)
+
 HRESULT CALLBACK
 advlog (
   PDEBUG_CLIENT4  Client,
   PCSTR           args
   )
 {
-  ULONG64  InfoAddress;
-  ULONG64  EntryAddress;
-  ULONG64  EndAddress;
-  UINT16   MessageLen;
-  ULONG64  LogBufferSize;
-  UINT16   Version;
-  ULONG    MessageOffset;
-  CHAR     Message[512];
-  ULONG    BytesRead;
-  UINT32   Signature;
-  HRESULT  Result;
+  ULONG64                           InfoAddress;
+  ULONG64                           EntryAddress;
+  ULONG64                           EndAddress;
+  ULONG                             LogBufferSize;
+  UINT16                            Version;
+  ULONG                             BytesRead;
+  HRESULT                           Result;
+  CHAR                              *LogBuffer = NULL;
+  ULONG                             Offset;
+  ULONG                             End;
+  ADVANCED_LOGGER_MESSAGE_ENTRY_V2  *Entry;
+  CHAR                              Temp;
 
   // NOTE: This implementation is a crude first past, The following should be done
   // in the future.
   //
-  // 1. Read full buffer then parse, to account for other execution modes writing
-  //    during debug
-  // 2. Handle circular buffer.
-  // 3. Handle interleaved multipart messages.
-  // 4. More robust error checking.
+  // 1. Handle circular buffer.
+  // 2. Handle interleaved multipart messages.
+  // 3. More robust error checking.
+  // 4. Print metadata and allow filtering.
   //
 
   INIT_API ();
@@ -293,33 +308,42 @@ advlog (
       dprintf ("Looped logs not yet implemented in extension!\n");
       Result = ERROR_NOT_SUPPORTED;
       goto Exit;
+    } else {
+      // non-loop optimization, only download through the last message.
+      LogBufferSize = min (LogBufferSize, (ULONG)(EndAddress - InfoAddress));
     }
 
-    while (EntryAddress < EndAddress) {
-      GetFieldValue (EntryAddress, "ADVANCED_LOGGER_MESSAGE_ENTRY_V2", "Signature", Signature);
-      if (Signature != 0x324d4c41) {
+    LogBuffer = (CHAR *)malloc (LogBufferSize);
+
+    // Output() forces IO flush to inform user.
+    g_ExtControl->Output (DEBUG_OUTPUT_NORMAL, "Reading log (0x%x bytes) ... \n", LogBufferSize);
+    ReadMemory (InfoAddress, LogBuffer, LogBufferSize, &BytesRead);
+    if (BytesRead != LogBufferSize) {
+      dprintf ("Failed to read log memory!\n");
+      Result = ERROR_BAD_LENGTH;
+      goto Exit;
+    }
+
+    Offset = (ULONG)(EntryAddress - InfoAddress);
+    End    = (ULONG)(EndAddress - InfoAddress);
+
+    while (Offset < End) {
+      Entry = (ADVANCED_LOGGER_MESSAGE_ENTRY_V2 *)(LogBuffer + Offset);
+      if (Entry->Signature != 0x324d4c41) {
         dprintf ("\nBad message signature!!\n");
         break;
       }
 
-      GetFieldValue (EntryAddress, "ADVANCED_LOGGER_MESSAGE_ENTRY_V2", "MessageOffset", MessageOffset);
-      GetFieldValue (EntryAddress, "ADVANCED_LOGGER_MESSAGE_ENTRY_V2", "MessageLen", MessageLen);
-      if (MessageLen == 0) {
-        dprintf ("\nMessage length is 0!\n");
-        break;
-      } else if (MessageLen >= 512) {
-        dprintf ("\n\nEXTENSION ERROR: Message too long!\n\n");
-        Result = ERROR_BUFFER_OVERFLOW;
-        goto Exit;
-      }
+      Temp = LogBuffer[Offset+Entry->MessageOffset+Entry->MessageLen];
 
-      ReadMemory (EntryAddress + MessageOffset, &Message[0], MessageLen, &BytesRead);
-      Message[BytesRead] = 0;
-      dprintf ("%s", Message);
-      EntryAddress = ALIGN_UP (EntryAddress + MessageOffset + MessageLen, 8);
+      LogBuffer[Offset+Entry->MessageOffset+Entry->MessageLen] = 0;
+      dprintf ("%s", LogBuffer + Offset + Entry->MessageOffset);
+      LogBuffer[Offset+Entry->MessageOffset+Entry->MessageLen] = Temp;
+
+      Offset = ALIGN_UP (Offset + Entry->MessageOffset + Entry->MessageLen, 8);
     }
   } else {
-    dprintf ("Version not implemented in debug extension!");
+    dprintf ("\nVersion not implemented in debug extension!\n");
   }
 
   dprintf ("\n------------------------------------------------------------------------------\n");
@@ -327,6 +351,10 @@ advlog (
   Result = S_OK;
 
 Exit:
+  if (LogBuffer != NULL) {
+    free (LogBuffer);
+  }
+
   EXIT_API ();
   return Result;
 }
