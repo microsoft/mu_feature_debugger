@@ -27,6 +27,7 @@ EXPORTS
     protocols
     readmsr
     readvar
+    reboot
     setenv
 
 ;--------------------------------------------------------------------
