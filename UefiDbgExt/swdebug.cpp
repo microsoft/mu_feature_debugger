@@ -120,6 +120,13 @@ reboot (
                   DEBUG_EXECUTE_DEFAULT
                   );
 
+  // Clear the symbols since the modules will be unloaded across reset.
+  g_ExtControl->Execute (
+                  DEBUG_OUTCTL_ALL_CLIENTS,
+                  ".reload /u",
+                  DEBUG_EXECUTE_DEFAULT
+                  );
+
   // Continue, this will reboot the system.
   dprintf ("\nRebooting...\n");
   g_ExtControl->Execute (
