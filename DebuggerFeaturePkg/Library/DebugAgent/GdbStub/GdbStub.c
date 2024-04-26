@@ -47,9 +47,10 @@ STATIC CONST CHAR8  *EXCEPTION_TYPE_STRINGS[] = {
 // Current state
 //
 
-EFI_SYSTEM_CONTEXT  *gSystemContext = NULL;
-EXCEPTION_INFO      *gExceptionInfo = NULL;
-BOOLEAN             gRunning        = TRUE;
+EFI_SYSTEM_CONTEXT  *gSystemContext   = NULL;
+EXCEPTION_INFO      *gExceptionInfo   = NULL;
+BOOLEAN             gRunning          = TRUE;
+BOOLEAN             mRebootOnContinue = FALSE;
 
 //
 // Buffers for GDB packets. Memory allocation are not available at first, so these
@@ -510,6 +511,11 @@ ProcessMonitorCmd (
 
     case 'M': // MSR Write
       AsciiSPrint (&mScratch[0], SCRATCH_SIZE, "TODO\n\r");
+      break;
+
+    case 'R': // Set Reboot on Continue
+      mRebootOnContinue = TRUE;
+      AsciiSPrint (&mScratch[0], SCRATCH_SIZE, "Will reboot on continue.\n\r");
       break;
 
     case 'b': // Module Break
@@ -1191,6 +1197,10 @@ ReportEntryToDebugger (
     if (!mConnectionOccurred && (EndTime != 0) && (DebugGetTimeMs () >= EndTime)) {
       gRunning = TRUE;
     }
+  }
+
+  if (mRebootOnContinue) {
+    DebugReboot ();
   }
 
   // Re-enable logging prints.
