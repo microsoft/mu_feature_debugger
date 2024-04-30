@@ -84,7 +84,8 @@ help (
     "  info                - Queries information about the UEFI debugger\n"
     "  modulebreak         - Sets a break on load for the provided module. e.g. 'shell'\n"
     "  readmsr             - Reads a MSR value (x86 only)\n"
-    "  readvar             - reads a UEFI variable\n"
+    "  readvar             - Reads a UEFI variable\n"
+    "  reboot              - Reboots the system\n"
     );
 
   EXIT_API ();

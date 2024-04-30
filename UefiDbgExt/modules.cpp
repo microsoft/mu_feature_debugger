@@ -29,6 +29,7 @@ FindModuleBackwards (
   CONST ULONG32  Magic = 0x5A4D;  // MZ
   ULONG          BytesRead;
   HRESULT        Result;
+  ULONG64        Base;
 
   MaxSize = 0x400000;   // 4 Mb
   Address = PAGE_ALIGN_DOWN (Address);
@@ -36,6 +37,13 @@ FindModuleBackwards (
     MinAddress = Address - MaxSize;
   } else {
     MinAddress = 0;
+  }
+
+  // Check this hasn't already be loaded.
+  Result = g_ExtSymbols->GetModuleByOffset (Address, 0, NULL, &Base);
+  if (Result == S_OK) {
+    dprintf ("Already loaded module at %llx\n", Base);
+    return Result;
   }
 
   Result = ERROR_NOT_FOUND;
@@ -73,6 +81,7 @@ loadmodules (
   UINT64   ImageBase;
   ULONG    Index;
   CHAR     Command[512];
+  ULONG64  Base;
 
   INIT_API ();
 
@@ -120,6 +129,14 @@ loadmodules (
     }
 
     GetFieldValue (ImageProtocol, "EFI_LOADED_IMAGE_PROTOCOL", "ImageBase", ImageBase);
+
+    // Check this hasn't already be loaded.
+    if ((g_ExtSymbols->GetModuleByOffset (ImageBase, 0, NULL, &Base) == S_OK) &&
+        (ImageBase == Base))
+    {
+      continue;
+    }
+
     sprintf_s (Command, sizeof (Command), ".imgscan /l /r %I64x (%I64x + 0xFFF)", ImageBase, ImageBase);
     g_ExtControl->Execute (
                     DEBUG_OUTCTL_ALL_CLIENTS,
@@ -186,12 +203,6 @@ findall (
     return Result;
   }
 
-  g_ExtControl->Execute (
-                  DEBUG_OUTCTL_ALL_CLIENTS,
-                  "ld *",
-                  DEBUG_EXECUTE_DEFAULT
-                  );
-
   //
   // Find the core module. This might be the same as the executing one.
   //
@@ -214,7 +225,7 @@ findall (
 
   g_ExtControl->Execute (
                   DEBUG_OUTCTL_ALL_CLIENTS,
-                  "ld *",
+                  "ld *Core",
                   DEBUG_EXECUTE_DEFAULT
                   );
 

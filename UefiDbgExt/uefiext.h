@@ -70,3 +70,8 @@ PCHAR
 GuidToString (
   GUID  *Guid
   );
+
+PCSTR
+ErrorLevelToString (
+  UINT32  ErrorLevel
+  );
