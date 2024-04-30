@@ -66,6 +66,12 @@ GetNextListEntry (
   IN UINT64   Previous
   );
 
+ULONG
+TokenizeArgs (
+  PCSTR  args,
+  PSTR   **Tokens
+  );
+
 PCHAR
 GuidToString (
   GUID  *Guid

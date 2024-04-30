@@ -357,7 +357,7 @@ advlog (
 
       if (PrevNL) {
         dprintf (
-          "%-8s- %-8s| ",
+          "%-8s| %-8s| ",
           (Entry->Phase < PHASE_COUNT ? PhaseStrings[Entry->Phase] : "UNK"),
           ErrorLevelToString (Entry->DebugLevel)
           );
