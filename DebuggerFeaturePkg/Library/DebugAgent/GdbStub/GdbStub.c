@@ -47,9 +47,10 @@ STATIC CONST CHAR8  *EXCEPTION_TYPE_STRINGS[] = {
 // Current state
 //
 
-EFI_SYSTEM_CONTEXT  *gSystemContext = NULL;
-EXCEPTION_INFO      *gExceptionInfo = NULL;
-BOOLEAN             gRunning        = TRUE;
+EFI_SYSTEM_CONTEXT  *gSystemContext   = NULL;
+EXCEPTION_INFO      *gExceptionInfo   = NULL;
+BOOLEAN             gRunning          = TRUE;
+BOOLEAN             mRebootOnContinue = FALSE;
 
 //
 // Buffers for GDB packets. Memory allocation are not available at first, so these
@@ -512,6 +513,11 @@ ProcessMonitorCmd (
       AsciiSPrint (&mScratch[0], SCRATCH_SIZE, "TODO\n\r");
       break;
 
+    case 'R': // Set Reboot on Continue
+      mRebootOnContinue = TRUE;
+      AsciiSPrint (&mScratch[0], SCRATCH_SIZE, "Will reboot on continue.\n\r");
+      break;
+
     case 'b': // Module Break
       if (DbgSetBreakOnModuleLoad (&Command[1])) {
         AsciiSPrint (&mScratch[0], SCRATCH_SIZE, "Will break on load for %a\n\r", &Command[1]);
@@ -699,26 +705,28 @@ WriteRegisterToContext (
   )
 {
   UINT8  *RegPtr;
-  UINT8  OrigChar;
-  UINTN  Value;
-  UINTN  StrLen;
+  UINT8  Value[10];
+  UINTN  Index;
+
+  ASSERT (gRegisterOffsets[RegNumber].Size <= sizeof (Value));
 
   // Two characters for every byte.
-  StrLen = gRegisterOffsets[RegNumber].Size * 2;
-  if (AsciiStrLen (Input) < StrLen) {
+  if (AsciiStrLen (Input) < gRegisterOffsets[RegNumber].Size * 2) {
     return NULL;
   }
 
   if (gRegisterOffsets[RegNumber].Offset != REG_NOT_PRESENT) {
-    RegPtr        = Registers + gRegisterOffsets[RegNumber].Offset;
-    OrigChar      = Input[StrLen];
-    Input[StrLen] = 0;
-    Value         = AsciiStrHexToUintn (Input);
-    Input[StrLen] = OrigChar;
-    CopyMem (RegPtr, &Value, gRegisterOffsets[RegNumber].Size);
+    RegPtr = Registers + gRegisterOffsets[RegNumber].Offset;
+    ZeroMem (&Value[0], sizeof (Value));
+    for (Index = 0; Index < gRegisterOffsets[RegNumber].Size; Index += 1) {
+      Value[Index] = HexToByte (Input);
+      Input       += 2;
+    }
+
+    CopyMem (RegPtr, &Value[0], gRegisterOffsets[RegNumber].Size);
   }
 
-  return Input + StrLen;
+  return Input;
 }
 
 /**
@@ -1191,6 +1199,10 @@ ReportEntryToDebugger (
     if (!mConnectionOccurred && (EndTime != 0) && (DebugGetTimeMs () >= EndTime)) {
       gRunning = TRUE;
     }
+  }
+
+  if (mRebootOnContinue) {
+    DebugReboot ();
   }
 
   // Re-enable logging prints.

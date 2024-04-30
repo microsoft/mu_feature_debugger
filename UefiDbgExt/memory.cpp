@@ -20,6 +20,21 @@ Abstract:
 // **************************************************************  Definitions
 //
 
+#pragma pack (push, 1)
+typedef struct {
+  UINT32    Signature;          // Signature
+  UINT8     MajorVersion;       // Major version of advanced logger message structure
+  UINT8     MinorVersion;       // Minor version of advanced logger message structure
+  UINT32    DebugLevel;         // Debug Level
+  UINT64    TimeStamp;          // Time stamp
+  UINT16    Phase;              // Boot phase that produced this message entry
+  UINT16    MessageLen;         // Number of bytes in Message
+  UINT16    MessageOffset;      // Offset of Message from start of structure,
+                                // used to calculate the address of the Message
+  // CHAR      MessageText[];      // Message Text
+} ADVANCED_LOGGER_MESSAGE_ENTRY_V2;
+#pragma pack (pop)
+
 PCSTR  MemoryTypeString[] = {
   "EfiReservedMemoryType",
   "EfiLoaderCode",
@@ -57,6 +72,23 @@ PSTR  HobTypes[] = {
 };
 
 #define HOB_TYPE_COUNT  (sizeof(HobTypes) / sizeof(HobTypes[0]))
+
+PCSTR  PhaseStrings[] = {
+  "UNSPEC",
+  "SEC",
+  "PEI",
+  "PEI64",
+  "DXE",
+  "RT",
+  "MmCore",
+  "MM",
+  "SmmCore",
+  "SMM",
+  "TFA",
+  "CNT",
+};
+
+#define PHASE_COUNT  (sizeof(PhaseStrings) / sizeof(PhaseStrings[0]))
 
 //
 // *******************************************************  External Functions
@@ -213,21 +245,6 @@ hobs (
   return S_OK;
 }
 
-#pragma pack (push, 1)
-typedef struct {
-  UINT32    Signature;          // Signature
-  UINT8     MajorVersion;       // Major version of advanced logger message structure
-  UINT8     MinorVersion;       // Minor version of advanced logger message structure
-  UINT32    DebugLevel;         // Debug Level
-  UINT64    TimeStamp;          // Time stamp
-  UINT16    Phase;              // Boot phase that produced this message entry
-  UINT16    MessageLen;         // Number of bytes in Message
-  UINT16    MessageOffset;      // Offset of Message from start of structure,
-                                // used to calculate the address of the Message
-  // CHAR      MessageText[];      // Message Text
-} ADVANCED_LOGGER_MESSAGE_ENTRY_V2;
-#pragma pack (pop)
-
 HRESULT CALLBACK
 advlog (
   PDEBUG_CLIENT4  Client,
@@ -326,6 +343,7 @@ advlog (
     End    = (ULONG)(EndAddress - InfoAddress);
 
     dprintf ("\n------------------------------------------------------------------------------\n");
+    BOOLEAN  PrevNL = TRUE;
     while (Offset < End) {
       Entry = (ADVANCED_LOGGER_MESSAGE_ENTRY_V2 *)(LogBuffer + Offset);
       if (Entry->Signature != 0x324d4c41) {
@@ -336,7 +354,18 @@ advlog (
       ULONG  StringEnd = Offset + Entry->MessageOffset + Entry->MessageLen;
       CHAR   Temp      = LogBuffer[StringEnd];
       LogBuffer[StringEnd] = 0;
+
+      if (PrevNL) {
+        dprintf (
+          "%-8s| %-8s| ",
+          (Entry->Phase < PHASE_COUNT ? PhaseStrings[Entry->Phase] : "UNK"),
+          ErrorLevelToString (Entry->DebugLevel)
+          );
+      }
+
       dprintf ("%s", LogBuffer + Offset + Entry->MessageOffset);
+      PrevNL = (LogBuffer[StringEnd - 1] == '\n');
+
       LogBuffer[StringEnd] = Temp;
 
       Offset = ALIGN_UP (Offset + Entry->MessageOffset + Entry->MessageLen, 8);

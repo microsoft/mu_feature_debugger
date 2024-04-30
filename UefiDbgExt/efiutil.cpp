@@ -52,6 +52,59 @@ GetNextListEntry (
   return (LinkAddress - LinkOffset);
 }
 
+PCSTR
+ErrorLevelToString (
+  UINT32  ErrorLevel
+  )
+{
+  switch (ErrorLevel) {
+    case 0x00000001:
+      return "INIT";
+    case 0x00000002:
+      return "WARN";
+    case 0x00000004:
+      return "LOAD";
+    case 0x00000008:
+      return "FS";
+    case 0x00000010:
+      return "POOL";
+    case 0x00000020:
+      return "PAGE";
+    case 0x00000040:
+      return "INFO";
+    case 0x00000080:
+      return "DISPATCH";
+    case 0x00000100:
+      return "VARIABLE";
+    case 0x00000200:
+      return "SMI";
+    case 0x00000400:
+      return "BM";
+    case 0x00001000:
+      return "BLKIO";
+    case 0x00004000:
+      return "NET";
+    case 0x00010000:
+      return "UNDI";
+    case 0x00020000:
+      return "LDFILE";
+    case 0x00080000:
+      return "EVENT";
+    case 0x00100000:
+      return "GCD";
+    case 0x00200000:
+      return "CACHE";
+    case 0x00400000:
+      return "VERBOSE";
+    case 0x00800000:
+      return "MANAGEABILITY";
+    case 0x80000000:
+      return "ERROR";
+    default:
+      return "UNK";
+  }
+}
+
 PCHAR
 GuidToString (
   GUID  *Guid
