@@ -705,26 +705,28 @@ WriteRegisterToContext (
   )
 {
   UINT8  *RegPtr;
-  UINT8  OrigChar;
-  UINTN  Value;
-  UINTN  StrLen;
+  UINT8  Value[10];
+  UINTN  Index;
+
+  ASSERT (gRegisterOffsets[RegNumber].Size <= sizeof (Value));
 
   // Two characters for every byte.
-  StrLen = gRegisterOffsets[RegNumber].Size * 2;
-  if (AsciiStrLen (Input) < StrLen) {
+  if (AsciiStrLen (Input) < gRegisterOffsets[RegNumber].Size * 2) {
     return NULL;
   }
 
   if (gRegisterOffsets[RegNumber].Offset != REG_NOT_PRESENT) {
-    RegPtr        = Registers + gRegisterOffsets[RegNumber].Offset;
-    OrigChar      = Input[StrLen];
-    Input[StrLen] = 0;
-    Value         = AsciiStrHexToUintn (Input);
-    Input[StrLen] = OrigChar;
-    CopyMem (RegPtr, &Value, gRegisterOffsets[RegNumber].Size);
+    RegPtr = Registers + gRegisterOffsets[RegNumber].Offset;
+    ZeroMem (&Value[0], sizeof (Value));
+    for (Index = 0; Index < gRegisterOffsets[RegNumber].Size; Index += 1) {
+      Value[Index] = HexToByte (Input);
+      Input       += 2;
+    }
+
+    CopyMem (RegPtr, &Value[0], gRegisterOffsets[RegNumber].Size);
   }
 
-  return Input + StrLen;
+  return Input;
 }
 
 /**
