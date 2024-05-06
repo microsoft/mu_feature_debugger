@@ -51,7 +51,8 @@ typedef enum _EXCEPTION_TYPE {
   ExceptionBreakpoint,
   ExceptionGenericFault,
   ExceptionInvalidOp,
-  ExceptionAlignment
+  ExceptionAlignment,
+  ExceptionAccessViolation
 } EXCEPTION_TYPE;
 
 typedef struct _EXCEPTION_INFO {

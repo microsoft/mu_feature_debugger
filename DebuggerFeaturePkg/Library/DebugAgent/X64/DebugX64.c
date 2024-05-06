@@ -93,10 +93,14 @@ DebuggerExceptionHandler (
       ExceptionInfo.ExceptionAddress = Context->Rip;
       break;
 
+    case EXCEPT_X64_PAGE_FAULT:
+      ExceptionInfo.ExceptionType    = ExceptionAccessViolation;
+      ExceptionInfo.ExceptionAddress = Context->Rip;
+      break;
+
     case EXCEPT_X64_DOUBLE_FAULT:
     case EXCEPT_X64_SEG_NOT_PRESENT:
     case EXCEPT_X64_GP_FAULT:
-    case EXCEPT_X64_PAGE_FAULT:
       ExceptionInfo.ExceptionType    = ExceptionGenericFault;
       ExceptionInfo.ExceptionAddress = Context->Rip;
       break;
@@ -111,19 +115,6 @@ DebuggerExceptionHandler (
   }
 
   ExceptionInfo.ArchExceptionCode = InterruptType;
-
-  if (PcdGetBool (PcdEnableWindbgWorkarounds) &&
-      (InterruptType == EXCEPT_X64_BREAKPOINT) &&
-      (DebuggerBreakpointReason != BreakpointReasonNone) &&
-      (*((UINT8 *)Context->Rip) == 0xCC))
-  {
-    //
-    // Windbg will act oddly when broken in on a actual INT 3 instruction, so
-    // preemptively step past this.
-    //
-
-    Context->Rip++;
-  }
 
   // Call into the core debugger module.
   ReportEntryToDebugger (&ExceptionInfo, SystemContext);

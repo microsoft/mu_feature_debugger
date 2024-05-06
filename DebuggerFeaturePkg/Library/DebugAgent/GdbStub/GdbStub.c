@@ -40,7 +40,15 @@ STATIC CONST CHAR8  *EXCEPTION_TYPE_STRINGS[] = {
   "ExceptionBreakpoint",
   "ExceptionGenericFault",
   "ExceptionInvalidOp",
-  "ExceptionAlignment"
+  "ExceptionAlignment",
+  "ExceptionAccessViolation"
+};
+
+STATIC CONST CHAR8  *BREAK_REASON_STRINGS[] = {
+  "N/A",
+  "Initial Breakpoint",
+  "Module Load",
+  "Debugger Break"
 };
 
 //
@@ -483,12 +491,14 @@ ProcessMonitorCmd (
         "%a\n\r"
         "Exception Type: %a (%d)\n\r"
         "Exception Address: %llx\n\r"
-        "Architecture Exception Code: 0x%llx\n\r",
+        "Architecture Exception Code: 0x%llx\n\r"
+        "Break Reason: %a\n\r",
         gDebuggerInfo,
         EXCEPTION_TYPE_STRINGS[gExceptionInfo->ExceptionType],
         gExceptionInfo->ExceptionType,
         gExceptionInfo->ExceptionAddress,
-        gExceptionInfo->ArchExceptionCode
+        gExceptionInfo->ArchExceptionCode,
+        BREAK_REASON_STRINGS[DebuggerBreakpointReason]
         );
 
       break;
