@@ -115,7 +115,7 @@ DebuggerExceptionHandler (
     case 0x21: // Current EL instruction abort
     case 0x24: // Lower EL data abort
     case 0x25: // Current EL data abort
-      ExceptionInfo.ExceptionType    = ExceptionGenericFault;
+      ExceptionInfo.ExceptionType    = ExceptionAccessViolation;
       ExceptionInfo.ExceptionAddress = Context->ELR;
       break;
 
@@ -158,18 +158,7 @@ DebuggerExceptionHandler (
 
   ExceptionInfo.ArchExceptionCode = ExceptionType;
 
-  if (PcdGetBool (PcdEnableWindbgWorkarounds) &&
-      (ExceptionType == 0x3c) &&
-      (DebuggerBreakpointReason != BreakpointReasonNone) &&
-      (CompareMem ((UINT8 *)Context->ELR, &ArchBreakpointInstruction[0], ArchBreakpointInstructionSize) == 0))
-  {
-    //
-    // Windbg will act oddly when broken in on a actual debug breakpoint instruction,
-    // so preemptively step past this.
-    //
-    Context->ELR += ArchBreakpointInstructionSize;
-  }
-
+  // Call into the core debugger module.
   ReportEntryToDebugger (&ExceptionInfo, SystemContext);
 
   //
