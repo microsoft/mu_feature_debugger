@@ -36,7 +36,7 @@ The second is to place the DLL in the windbg application folder, or another
 place in windbg's extpath which can be enumerating using the .extpath command.
 This will make the extension available to all future windbg sessions.
 
-    e.g. C:\Users\<user>\AppData\Local\dbg\UI
+    e.g. C:\Users\<user>\AppData\Local\dbg\EngineExtensions
 
 For more information about loading debugger extensions see the
 [Microsoft documentation page](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/loading-debugger-extension-dlls).
