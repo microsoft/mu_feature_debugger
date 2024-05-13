@@ -59,7 +59,6 @@
   PeCoffGetEntryPointLib
   CacheMaintenanceLib
   DebugPrintErrorLevelLib
-  DeviceStateLib
   DebugTransportLib
   TransportLogControlLib
   HwResetSystemLib

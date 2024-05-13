@@ -26,6 +26,12 @@ file. This project requires the Windows SDK and the Windows Driver Kit.
 
 ## Installing the Extension
 
+The quickest way to install the extension is to run the following.
+
+```shell
+    wget -Uri https://github.com/microsoft/mu_feature_debugger/releases/latest/download/uefiext.dll -OutFile C:\Users\$Env:UserName\AppData\Local\DBG\EngineExtensions\UefiExt.dll
+```
+
 Debugger extensions can be loaded into windbg several ways. First, by
 manually loading once already in windbg. This can be done with the .load
 command. Though this will not persist across windbg sessions.
@@ -36,7 +42,7 @@ The second is to place the DLL in the windbg application folder, or another
 place in windbg's extpath which can be enumerating using the .extpath command.
 This will make the extension available to all future windbg sessions.
 
-    e.g. C:\Users\<user>\AppData\Local\dbg\UI
+    e.g. C:\Users\<user>\AppData\Local\dbg\EngineExtensions
 
 For more information about loading debugger extensions see the
 [Microsoft documentation page](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/loading-debugger-extension-dlls).

@@ -419,7 +419,7 @@ ProcessMemoryCommand (
       //
 
       if (PcdGetBool (PcdEnableWindbgWorkarounds) &&
-          ((Address == 0) || ((Address & ~EFI_PAGE_MASK) == 0xfffff78000000000llu)) &&
+          ((Address < EFI_PAGE_SIZE) || ((Address & ~EFI_PAGE_MASK) == 0xfffff78000000000llu)) &&
           (RangeLength < EFI_PAGE_SIZE))
       {
         ZeroMem (&mScratch[0], RangeLength);
