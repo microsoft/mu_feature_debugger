@@ -639,7 +639,7 @@ class EfiSymbolsCmd (gdb.Command):
             action='store_true',
             dest='pc',
             help='Load symbols for pc',
-            default=True)
+            default=False)
 
         self.parser.add_option(
             '--pei',
@@ -705,7 +705,6 @@ class EfiSymbolsCmd (gdb.Command):
 
         self.user_selected_thread = gdb.selected_thread()
         self.user_selected_frame = gdb.selected_frame()
-        print(f"{gdb.selected_frame()}")
 
     def restore_user_state(self):
         self.user_selected_thread.switch()
@@ -847,38 +846,6 @@ class EfiCmd (gdb.Command):
             # default to loading all symbols
             gdb.execute('efi symbols --extended')
 
-
-class LoadEmulatorEfiSymbols(gdb.Breakpoint):
-    '''
-    breakpoint for EmulatorPkg to load symbols
-    Note: make sure SecGdbScriptBreak is not optimized away!
-    Also turn off the dlopen() flow like on macOS.
-    '''
-    def stop(self):
-        symbols = EfiSymbols()
-        # Emulator adds SizeOfHeaders so we need file alignment to search
-        symbols.configure_search(0x20)
-
-        frame = gdb.newest_frame()
-
-        try:
-            # gdb was looking at spill address, pre spill :(
-            LoadAddress = frame.read_register('rdx')
-            AddSymbolFlag = frame.read_register('rcx')
-        except gdb.error:
-            LoadAddress = frame.read_var('LoadAddress')
-            AddSymbolFlag = frame.read_var('AddSymbolFlag')
-
-        if AddSymbolFlag == 1:
-            res = symbols.address_to_symbols(LoadAddress)
-        else:
-            res = symbols.unload_symbols(LoadAddress)
-        print(res)
-
-        # keep running
-        return False
-
-
 # Get python backtraces to debug errors in this script
 gdb.execute("set python print-stack full")
 
@@ -902,19 +869,5 @@ EfiHobCmd()
 EfiDevicePathCmd()
 EfiGuidCmd()
 
-#
-bp = LoadEmulatorEfiSymbols('SecGdbScriptBreak', internal=True)
-if bp.pending:
-    try:
-        gdb.selected_frame()
-        # Not the emulator so do this when you attach
-        gdb.execute('efi symbols --frame --extended', True)
-        gdb.execute('bt')
-        # If you want to skip the above commands comment them out
-        pass
-    except gdb.error:
-        # If you load the script and there is no target ignore the error.
-        pass
-else:
-    # start the emulator
-    gdb.execute('run')
+gdb.execute('efi symbols --pc --extended', True)
+gdb.execute('bt')

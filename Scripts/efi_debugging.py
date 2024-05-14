@@ -1799,7 +1799,6 @@ class EfiConfigurationTable:
     @ classmethod
     def read_efi_config_table(cls, table_cnt, table_ptr, ctype_read):
         '''Create a dictionary of EFI Configuration table entries'''
-        print(f"tablke cnt: {table_cnt}")
         EmptryTables = EFI_CONFIGURATION_TABLE * table_cnt
         Tables = ctype_read(EmptryTables, table_ptr)
         for i in range(table_cnt):
