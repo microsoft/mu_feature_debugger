@@ -140,7 +140,7 @@ class EfiSymbols:
             return 'Already Loaded: '
         try:
             res = 'Loading Symbols Failed:'
-            res = gdb.execute('add-symbol-file ' + pecoff.CodeViewPdb +
+            res = gdb.execute('add-symbol-file -readnow ' + pecoff.CodeViewPdb +
                               ' ' + hex(pecoff.TextAddress) +
                               ' -s .data ' + hex(pecoff.DataAddress),
                               False, True)
