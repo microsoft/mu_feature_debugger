@@ -705,7 +705,6 @@ class EfiSymbolsCmd (gdb.Command):
 
         self.user_selected_thread = gdb.selected_thread()
         self.user_selected_frame = gdb.selected_frame()
-        print(f"{gdb.selected_frame()}")
 
     def restore_user_state(self):
         self.user_selected_thread.switch()
