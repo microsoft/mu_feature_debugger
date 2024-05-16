@@ -134,6 +134,42 @@ SendGdbAck (
 }
 
 /**
+  Sends a GDB notification packet with log information.
+
+  @param[in] FormatString  Format string of the log message.
+  @param[in] VA_LIST       Additional arguments for the formatting.
+
+**/
+STATIC
+VOID
+GdbNotifyLog (
+  IN  CONST CHAR8  *FormatString,
+  ...
+  )
+{
+  VA_LIST  Marker;
+  UINTN    Length;
+  UINT8    Checksum;
+  CHAR8    String[64];
+
+  Length = sizeof("%log:") - 1;
+  CopyMem(String, "%log:", Length);
+
+  VA_START (Marker, FormatString);
+  Length += AsciiVSPrint (&String[Length], sizeof(String) - Length - 4, FormatString, Marker);
+  VA_END (Marker);
+
+  Checksum  = CalculateSum8 ((UINT8 *)&String[1], Length - 1);
+  String[Length] = '#';
+  String[Length + 1] = HexChars[Checksum >> 4];
+  String[Length + 2] = HexChars[Checksum & 0xF];
+  String[Length + 3] = 0;
+  Length            += 3;
+
+  DebugTransportWrite ((UINT8 *)&String[0], Length);
+}
+
+/**
   Sends a checksummed GDB packet response.
 
   @param[in] Response   The NULL terminated string of the response. The NULL,
@@ -1184,6 +1220,8 @@ ReportEntryToDebugger (
   gExceptionInfo = ExceptionInfo;
   gRunning       = FALSE;
 
+  GdbNotifyLog("Debug Entry");
+
   // Squelch logging output, it can confuse the debugger.
   TransportLogSuspend ();
 
@@ -1214,6 +1252,8 @@ ReportEntryToDebugger (
   if (mRebootOnContinue) {
     DebugReboot ();
   }
+
+  GdbNotifyLog("Debug Exit");
 
   // Re-enable logging prints.
   TransportLogResume ();
