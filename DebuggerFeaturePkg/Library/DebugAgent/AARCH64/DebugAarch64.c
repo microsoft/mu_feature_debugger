@@ -61,7 +61,7 @@ DebugReadOslsrEl1 (
   );
 
 VOID
-DebugWriteOslsrEl1 (
+DebugWriteOslarEl1 (
   IN UINT64  Value
   );
 
@@ -285,11 +285,11 @@ DebugArchInit (
   SpeculationBarrier();
 
   // Clear the OS lock.
-  // Value = DebugReadOslsrEl1();
-  // if (Value & OSLSR_LOCKED) {
-  //   DebugWriteOslsrEl1(0);
-  // }
-  // SpeculationBarrier();
+  Value = DebugReadOslsrEl1();
+  if (Value & OSLSR_LOCKED) {
+    DebugWriteOslarEl1(0);
+  }
+  SpeculationBarrier();
 
   // Enable kernel and monitor debug bits.
   Value  = DebugReadMdscrEl1 ();

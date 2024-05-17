@@ -13,7 +13,7 @@
 GCC_ASM_EXPORT(DebugReadMdscrEl1)
 GCC_ASM_EXPORT(DebugWriteMdscrEl1)
 GCC_ASM_EXPORT(DebugReadOslsrEl1)
-GCC_ASM_EXPORT(DebugWriteOslsrEl1)
+GCC_ASM_EXPORT(DebugWriteOslarEl1)
 GCC_ASM_EXPORT(DebugReadDaif)
 GCC_ASM_EXPORT(DebugWriteDaif)
 GCC_ASM_EXPORT(DebugGetTCR)
@@ -31,8 +31,8 @@ ASM_PFX(DebugReadOslsrEl1):
     mrs x0, oslsr_el1
     ret
 
-ASM_PFX(DebugWriteOslsrEl1):
-    msr oslsr_el1, x0
+ASM_PFX(DebugWriteOslarEl1):
+    msr oslar_el1, x0
     ret
 
 ASM_PFX(DebugReadDaif):
