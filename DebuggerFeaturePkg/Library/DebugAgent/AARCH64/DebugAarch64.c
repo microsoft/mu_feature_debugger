@@ -22,10 +22,14 @@
 // Debug register definitions.
 //
 
-#define ARM64_MDSCR_MDE   0x00008000
-#define ARM64_MDSCR_KDE   0x00002000
-#define ARM64_MDSCR_TDCC  0x00001000
-#define ARM64_MDSCR_SS    0x00000001
+#define MDSCR_MDE   0x00008000
+#define MDSCR_KDE   0x00002000
+#define MDSCR_TDCC  0x00001000
+#define MDSCR_SS    0x00000001
+
+#define OSLSR_LOCKED       0x2
+
+#define DAIF_DEBUG 0x200
 
 //
 // Assembly routines.
@@ -38,6 +42,26 @@ DebugReadMdscrEl1 (
 
 VOID
 DebugWriteMdscrEl1 (
+  IN UINT64  Value
+  );
+
+UINT64
+DebugReadDaif (
+  VOID
+  );
+
+VOID
+DebugWriteDaif (
+  IN UINT64  Value
+  );
+
+UINT64
+DebugReadOslsrEl1 (
+  VOID
+  );
+
+VOID
+DebugWriteOslsrEl1 (
   IN UINT64  Value
   );
 
@@ -141,7 +165,7 @@ DebuggerExceptionHandler (
 
       // Clear the step flag is present.
       Value  = DebugReadMdscrEl1 ();
-      Value &= ~ARM64_MDSCR_SS;
+      Value &= ~MDSCR_SS;
       DebugWriteMdscrEl1 (Value);
 
       ExceptionInfo.ExceptionType    = ExceptionDebugStep;
@@ -202,7 +226,7 @@ AddSingleStep (
 
   // Set the Software Step bit in the MDSCR.
   Value  = DebugReadMdscrEl1 ();
-  Value |= (ARM64_MDSCR_SS | ARM64_MDSCR_MDE | ARM64_MDSCR_KDE);
+  Value |= (MDSCR_SS | MDSCR_MDE | MDSCR_KDE);
   DebugWriteMdscrEl1 (Value);
 }
 
@@ -235,6 +259,7 @@ DebugGetTimeMs (
   @param[in]  DebugConfig       The debug configuration data.
 
 **/
+volatile BOOLEAN dbgloop = TRUE;
 VOID
 DebugArchInit (
   IN DEBUGGER_CONTROL_HOB  *DebugConfig
@@ -242,9 +267,41 @@ DebugArchInit (
 {
   UINT64  Value;
 
+  // while (dbgloop) {
+
+  // }
+
+  //
+  // For AARCH64 debugging to work, the following must be true.
+  //    1. OS Lock is unlocked.
+  //    2. Enabled the kernel and monitor debug bits in the MDSCR
+  //    3. Enabled debug exceptions in the DAIF
+  //
+
+  // Make sure debug exceptions are disable in the DAIF while configuring.
+  Value = DebugReadDaif();
+  Value |= DAIF_DEBUG;
+  DebugWriteDaif(Value);
+  SpeculationBarrier();
+
+  // Clear the OS lock.
+  // Value = DebugReadOslsrEl1();
+  // if (Value & OSLSR_LOCKED) {
+  //   DebugWriteOslsrEl1(0);
+  // }
+  // SpeculationBarrier();
+
+  // Enable kernel and monitor debug bits.
   Value  = DebugReadMdscrEl1 ();
-  Value |= (ARM64_MDSCR_MDE | ARM64_MDSCR_KDE);
+  Value |= (MDSCR_MDE | MDSCR_KDE);
   DebugWriteMdscrEl1 (Value);
+  SpeculationBarrier();
+
+  // Make sure debug exceptions are enabled in the DAIF.
+  Value = DebugReadDaif();
+  Value &= ~DAIF_DEBUG;
+  DebugWriteDaif(Value);
+  SpeculationBarrier();
 }
 
 #define MIN_T0SZ        16
