@@ -259,17 +259,12 @@ DebugGetTimeMs (
   @param[in]  DebugConfig       The debug configuration data.
 
 **/
-volatile BOOLEAN dbgloop = TRUE;
 VOID
 DebugArchInit (
   IN DEBUGGER_CONTROL_HOB  *DebugConfig
   )
 {
   UINT64  Value;
-
-  // while (dbgloop) {
-
-  // }
 
   //
   // For AARCH64 debugging to work, the following must be true.
@@ -278,13 +273,14 @@ DebugArchInit (
   //    3. Enabled debug exceptions in the DAIF
   //
 
-  // Make sure debug exceptions are disable in the DAIF while configuring.
+  // Make sure debug exceptions are disable in the DAIF while configuring in case
+  // there is some latent configuration.
   Value = DebugReadDaif();
   Value |= DAIF_DEBUG;
   DebugWriteDaif(Value);
   SpeculationBarrier();
 
-  // Clear the OS lock.
+  // Clear the OS lock if needed.
   Value = DebugReadOslsrEl1();
   if (Value & OSLSR_LOCKED) {
     DebugWriteOslarEl1(0);

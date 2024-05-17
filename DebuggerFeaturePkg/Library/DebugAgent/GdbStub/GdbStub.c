@@ -1220,8 +1220,6 @@ ReportEntryToDebugger (
   gExceptionInfo = ExceptionInfo;
   gRunning       = FALSE;
 
-  GdbNotifyLog("Debug Entry");
-
   // Squelch logging output, it can confuse the debugger.
   TransportLogSuspend ();
 
@@ -1252,8 +1250,6 @@ ReportEntryToDebugger (
   if (mRebootOnContinue) {
     DebugReboot ();
   }
-
-  GdbNotifyLog("Debug Exit");
 
   // Re-enable logging prints.
   TransportLogResume ();
