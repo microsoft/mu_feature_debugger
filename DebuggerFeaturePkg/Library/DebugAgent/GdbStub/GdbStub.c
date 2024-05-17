@@ -140,6 +140,7 @@ SendGdbAck (
   @param[in] VA_LIST       Additional arguments for the formatting.
 
 **/
+/*
 STATIC
 VOID
 GdbNotifyLog (
@@ -168,6 +169,7 @@ GdbNotifyLog (
 
   DebugTransportWrite ((UINT8 *)&String[0], Length);
 }
+*/
 
 /**
   Sends a checksummed GDB packet response.
