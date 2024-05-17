@@ -27,9 +27,9 @@
 #define MDSCR_TDCC  0x00001000
 #define MDSCR_SS    0x00000001
 
-#define OSLSR_LOCKED       0x2
+#define OSLSR_LOCKED  0x2
 
-#define DAIF_DEBUG 0x200
+#define DAIF_DEBUG  0x200
 
 //
 // Assembly routines.
@@ -275,29 +275,30 @@ DebugArchInit (
 
   // Make sure debug exceptions are disable in the DAIF while configuring in case
   // there is some latent configuration.
-  Value = DebugReadDaif();
+  Value  = DebugReadDaif ();
   Value |= DAIF_DEBUG;
-  DebugWriteDaif(Value);
-  SpeculationBarrier();
+  DebugWriteDaif (Value);
+  SpeculationBarrier ();
 
   // Clear the OS lock if needed.
-  Value = DebugReadOslsrEl1();
+  Value = DebugReadOslsrEl1 ();
   if (Value & OSLSR_LOCKED) {
-    DebugWriteOslarEl1(0);
+    DebugWriteOslarEl1 (0);
   }
-  SpeculationBarrier();
+
+  SpeculationBarrier ();
 
   // Enable kernel and monitor debug bits.
   Value  = DebugReadMdscrEl1 ();
   Value |= (MDSCR_MDE | MDSCR_KDE);
   DebugWriteMdscrEl1 (Value);
-  SpeculationBarrier();
+  SpeculationBarrier ();
 
   // Make sure debug exceptions are enabled in the DAIF.
-  Value = DebugReadDaif();
+  Value  = DebugReadDaif ();
   Value &= ~DAIF_DEBUG;
-  DebugWriteDaif(Value);
-  SpeculationBarrier();
+  DebugWriteDaif (Value);
+  SpeculationBarrier ();
 }
 
 #define MIN_T0SZ        16

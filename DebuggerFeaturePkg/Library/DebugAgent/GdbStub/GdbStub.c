@@ -152,15 +152,15 @@ GdbNotifyLog (
   UINT8    Checksum;
   CHAR8    String[64];
 
-  Length = sizeof("%log:") - 1;
-  CopyMem(String, "%log:", Length);
+  Length = sizeof ("%log:") - 1;
+  CopyMem (String, "%log:", Length);
 
   VA_START (Marker, FormatString);
-  Length += AsciiVSPrint (&String[Length], sizeof(String) - Length - 4, FormatString, Marker);
+  Length += AsciiVSPrint (&String[Length], sizeof (String) - Length - 4, FormatString, Marker);
   VA_END (Marker);
 
-  Checksum  = CalculateSum8 ((UINT8 *)&String[1], Length - 1);
-  String[Length] = '#';
+  Checksum           = CalculateSum8 ((UINT8 *)&String[1], Length - 1);
+  String[Length]     = '#';
   String[Length + 1] = HexChars[Checksum >> 4];
   String[Length + 2] = HexChars[Checksum & 0xF];
   String[Length + 3] = 0;
