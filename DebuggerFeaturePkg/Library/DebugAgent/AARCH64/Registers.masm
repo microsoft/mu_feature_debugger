@@ -9,6 +9,10 @@
 
     EXPORT DebugReadMdscrEl1
     EXPORT DebugWriteMdscrEl1
+    EXPORT DebugReadOslsrEl1
+    EXPORT DebugWriteOslarEl1
+    EXPORT DebugReadDaif
+    EXPORT DebugWriteDaif
     EXPORT DebugGetTCR
     EXPORT DebugGetTTBR0BaseAddress
 
@@ -23,6 +27,30 @@ DebugWriteMdscrEl1 PROC
   msr mdscr_el1, x0
   ret
 DebugWriteMdscrEl1 ENDP
+
+
+DebugReadOslsrEl1 PROC
+  mrs x0, oslsr_el1
+  ret
+DebugReadOslsrEl1 ENDP
+
+
+DebugWriteOslarEl1 PROC
+  msr oslar_el1, x0
+  ret
+DebugWriteOslarEl1 ENDP
+
+
+DebugReadDaif PROC
+  mrs x0, daif
+  ret
+DebugReadDaif ENDP
+
+
+DebugWriteDaif PROC
+  msr daif, x0
+  ret
+DebugWriteDaif ENDP
 
 
 DebugGetTCR PROC
