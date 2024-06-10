@@ -204,4 +204,20 @@ DebugArchInit (
   IN DEBUGGER_CONTROL_HOB  *DebugConfig
   );
 
+BOOLEAN
+AddWatchpoint (
+  IN UINTN Address,
+  IN UINTN Length,
+  IN BOOLEAN Read,
+  IN BOOLEAN Write
+  );
+
+BOOLEAN
+RemoveWatchpoint (
+  IN UINTN Address,
+  IN UINTN Length,
+  IN BOOLEAN Read,
+  IN BOOLEAN Write
+  );
+
 #endif

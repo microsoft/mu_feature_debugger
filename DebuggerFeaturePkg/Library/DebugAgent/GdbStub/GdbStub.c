@@ -914,6 +914,9 @@ ProcessBreakpoint (
   CHAR8    *AddressStr;
   UINTN    Address;
   CHAR8    *LengthStr;
+  UINTN    Length;
+  BOOLEAN  Read;
+  BOOLEAN  Write;
   BOOLEAN  Result;
 
   TypeStr    = Command;
@@ -936,20 +939,27 @@ ProcessBreakpoint (
 
   Type    = AsciiStrHexToUintn (TypeStr);
   Address = AsciiStrHexToUintn (AddressStr);
-  // Length  = AsciiStrHexToUintn (LengthStr);
+  Length  = AsciiStrHexToUintn (LengthStr);
+  if (Type == 0) {
+    // Software breakpoint
+    if (Remove) {
+      Result = RemoveSoftwareBreakpoint (Address);
+    } else {
+      Result = AddSoftwareBreakpoint (Address);
+    }
+  } else if ((Type >= 2) && (Type <= 4)) {
+    // Watch points. 2 is write, 3 is read, 4 is both.
+    Read  = (Type == 3) || (Type == 4);
+    Write = (Type == 2) || (Type == 4);
 
-  // Length is currently ignored as a SW breakpoint will be a fixed length per
-  // arch.
-
-  if (Type != 0) {
+    if (Remove) {
+      Result = RemoveWatchpoint (Address, Length, Read, Write);
+    } else {
+      Result = AddWatchpoint (Address, Length, Read, Write);
+    }
+  } else {
     SendGdbError (GDB_ERROR_UNSUPPORTED);
     return;
-  }
-
-  if (Remove) {
-    Result = RemoveSoftwareBreakpoint (Address);
-  } else {
-    Result = AddSoftwareBreakpoint (Address);
   }
 
   if (Result) {
