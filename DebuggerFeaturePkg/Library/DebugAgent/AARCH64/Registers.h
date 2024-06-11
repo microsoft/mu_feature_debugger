@@ -6,8 +6,8 @@
 
 **/
 
-#ifndef __DEBUG_REGISTERS_H__
-#define __DEBUG_REGISTERS_H__
+#ifndef DEBUG_REGISTERS_H__
+#define DEBUG_REGISTERS_H__
 
 UINT64
 DebugReadMdscrEl1 (

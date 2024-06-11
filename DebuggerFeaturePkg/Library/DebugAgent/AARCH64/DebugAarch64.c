@@ -487,9 +487,13 @@ AddWatchpoint (
   UINTN    Lsc;
   DBG_WCR  DbgWcr;
 
+  if (Length == 0) {
+    return FALSE;
+  }
+
   // Byte Address Select is a bitmap where each bit in Address + N up to +7.
   // shift away full 8 by (8 - count) to get this.
-  Bas = (0xFF >> (8 - MIN (Length, 8)));
+  Bas = RShiftU64 (0xFF, (8 - MIN (Length, 8)));
   Lsc = (Read ? BIT0 : 0) | (Write ? BIT1 : 0);
 
   // Check for duplicates.
@@ -547,9 +551,13 @@ RemoveWatchpoint (
   UINTN    Lsc;
   DBG_WCR  DbgWcr;
 
+  if (Length == 0) {
+    return FALSE;
+  }
+
   // Byte Address Select is a bitmap where each bit in Address + N up to +7.
   // shift away full 8 by (8 - count) to get this.
-  Bas = (0xFF >> (8 - MIN (Length, 8)));
+  Bas = RShiftU64 (0xFF, (8 - MIN (Length, 8)));
   Lsc = (Read ? BIT0 : 0) | (Write ? BIT1 : 0);
 
   // Check for duplicates.
