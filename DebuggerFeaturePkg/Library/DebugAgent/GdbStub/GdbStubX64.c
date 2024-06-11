@@ -133,15 +133,27 @@ GdbDumpSystemRegisters (
   AsciiSPrint (
     Response,
     BufferLength,
-    "\r\n",
+    "\r\n"
     "IDT: %llx : %x\n\r"
     "GDT: %llx : %x\n\r"
     "TR:  %x\n\r"
+    "DR0: %llx\n\r"
+    "DR1: %llx\n\r"
+    "DR2: %llx\n\r"
+    "DR3: %llx\n\r"
+    "DR6: %llx\n\r"
+    "DR7: %llx\n\r"
     "\r\n",
     Idtr.Base,
     Idtr.Limit,
     Gdtr.Base,
     Gdtr.Limit,
-    AsmReadTr ()
+    AsmReadTr (),
+    AsmReadDr0 (),
+    AsmReadDr1 (),
+    AsmReadDr2 (),
+    AsmReadDr3 (),
+    AsmReadDr6 (),
+    AsmReadDr7 ()
     );
 }

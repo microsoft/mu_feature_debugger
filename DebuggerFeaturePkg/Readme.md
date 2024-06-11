@@ -27,6 +27,25 @@ debugger initializes on libraries or custom implementations such as for page tab
 walks or exceptions handlers, it will attempt to use the protocols once available
 for consistency.
 
+## Supported Functionality
+
+The following functionality is supported by the UEFI Debugger.
+
+| Feature                          | State        | Notes                             |
+|----------------------------------|--------------|-----------------------------------|
+| Memory Read/Write                | Supported    | |
+| General Purpose Register R/W     | Supported    | |
+| Instruction Stepping             | Supported    | |
+| Interrupt break                  | Supported    | |
+| System Register Access           | Partial      | Partially supported read through monitor commands |
+| SW Breakpoints                   | Supported    | |
+| Watch points / Data Breakpoints  | Supported    | |
+| HW Breakpoints                   | Unsupported  | Not currently needed with SW breakpoints |
+| Break on module load             | Supported    | Supported through monitor command |
+| Reboot                           | Supported    | Supplemented with monitor command for better use |
+| UEFI Variable Access             | Planned      | Planned support by monitor command |
+| Multithread Support              | Planned      | Currently only exposes the BSP thread/core |
+
 ## Enabling the debugger
 
 The [DebugAgent library](./Library/DebugAgent/) implements the debug logic and is
