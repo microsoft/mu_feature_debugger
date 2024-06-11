@@ -15,6 +15,22 @@
     EXPORT DebugWriteDaif
     EXPORT DebugGetTCR
     EXPORT DebugGetTTBR0BaseAddress
+    EXPORT DebugReadDbgWvr0El1
+    EXPORT DebugWriteDbgWvr0El1
+    EXPORT DebugReadDbgWcr0El1
+    EXPORT DebugWriteDbgWcr0El1
+    EXPORT DebugReadDbgWvr1El1
+    EXPORT DebugWriteDbgWvr1El1
+    EXPORT DebugReadDbgWcr1El1
+    EXPORT DebugWriteDbgWcr1El1
+    EXPORT DebugReadDbgWvr2El1
+    EXPORT DebugWriteDbgWvr2El1
+    EXPORT DebugReadDbgWcr2El1
+    EXPORT DebugWriteDbgWcr2El1
+    EXPORT DebugReadDbgWvr3El1
+    EXPORT DebugWriteDbgWvr3El1
+    EXPORT DebugReadDbgWcr3El1
+    EXPORT DebugWriteDbgWcr3El1
 
 
 DebugReadMdscrEl1 PROC
@@ -85,6 +101,101 @@ DebugGetTTBR0BaseAddress PROC
   isb   sy
   ret
 ArmGetTTBR0BaseAddress ENDP
+
+DebugReadDbgWvr0El1 PROC
+    mrs x0, dbgwvr0_el1
+    ret
+DebugReadDbgWvr0El1 ENDP
+
+
+DebugWriteDbgWvr0El1 PROC
+    msr dbgwvr0_el1, x0
+    ret
+DebugWriteDbgWvr0El1 ENDP
+
+
+DebugReadDbgWcr0El1 PROC
+    mrs x0, dbgwcr0_el1
+    ret
+DebugReadDbgWcr0El1 ENDP
+
+
+DebugWriteDbgWcr0El1 PROC
+    msr dbgwcr0_el1, x0
+    ret
+DebugWriteDbgWcr0El1 ENDP
+
+
+DebugReadDbgWvr1El1 PROC
+    mrs x0, dbgwvr1_el1
+    ret
+DebugReadDbgWvr1El1 ENDP
+
+
+DebugWriteDbgWvr1El1 PROC
+    msr dbgwvr1_el1, x0
+    ret
+DebugWriteDbgWvr1El1 ENDP
+
+
+DebugReadDbgWcr1El1 PROC
+    mrs x0, dbgwcr1_el1
+    ret
+DebugReadDbgWcr1El1 ENDP
+
+
+DebugWriteDbgWcr1El1 PROC
+    msr dbgwcr1_el1, x0
+    ret
+DebugWriteDbgWcr1El1 ENDP
+
+
+DebugReadDbgWvr2El1 PROC
+    mrs x0, dbgwvr2_el1
+    ret
+DebugReadDbgWvr2El1 ENDP
+
+
+DebugWriteDbgWvr2El1 PROC
+    msr dbgwvr2_el1, x0
+    ret
+DebugWriteDbgWvr2El1 ENDP
+
+
+DebugReadDbgWcr2El1 PROC
+    mrs x0, dbgwcr2_el1
+    ret
+DebugReadDbgWcr2El1 ENDP
+
+
+DebugWriteDbgWcr2El1 PROC
+    msr dbgwcr2_el1, x0
+    ret
+DebugWriteDbgWcr2El1 ENDP
+
+
+DebugReadDbgWvr3El1 PROC
+    mrs x0, dbgwvr3_el1
+    ret
+DebugReadDbgWvr3El1 ENDP
+
+
+DebugWriteDbgWvr3El1 PROC
+    msr dbgwvr3_el1, x0
+    ret
+DebugWriteDbgWvr3El1 ENDP
+
+
+DebugReadDbgWcr3El1 PROC
+    mrs x0, dbgwcr3_el1
+    ret
+DebugReadDbgWcr3El1 ENDP
+
+
+DebugWriteDbgWcr3El1 PROC
+    msr dbgwcr3_el1, x0
+    ret
+DebugWriteDbgWcr3El1 ENDP
 
 
     END

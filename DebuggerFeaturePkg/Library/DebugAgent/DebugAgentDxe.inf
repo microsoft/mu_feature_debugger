@@ -33,6 +33,7 @@
   AARCH64/DebugAarch64.c
   AARCH64/Registers.masm | MSFT
   AARCH64/Registers.S | GCC
+  AARCH64/Registers.h
   GdbStub/GdbStubAarch64.c
 
 [Sources.X64]

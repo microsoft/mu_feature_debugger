@@ -17,6 +17,7 @@
 #include "DebugAgent.h"
 #include "GdbStub.h"
 #include "AArch64Mmu.h"
+#include "Registers.h"
 
 //
 // Debug register definitions.
@@ -31,49 +32,23 @@
 
 #define DAIF_DEBUG  0x200
 
-//
-// Assembly routines.
-//
-
-UINT64
-DebugReadMdscrEl1 (
-  VOID
-  );
-
-VOID
-DebugWriteMdscrEl1 (
-  IN UINT64  Value
-  );
-
-UINT64
-DebugReadDaif (
-  VOID
-  );
-
-VOID
-DebugWriteDaif (
-  IN UINT64  Value
-  );
-
-UINT64
-DebugReadOslsrEl1 (
-  VOID
-  );
-
-VOID
-DebugWriteOslarEl1 (
-  IN UINT64  Value
-  );
-
-UINT64
-DebugGetTCR (
-  VOID
-  );
-
-UINT64
-DebugGetTTBR0BaseAddress (
-  VOID
-  );
+typedef union _DBG_WCR {
+  struct {
+    UINTN  Enabled:1;
+    UINTN  Pac:2;
+    UINTN  Lsc:2;
+    UINTN  Bas:8;
+    UINTN  Hmc:1;
+    UINTN  Ssc:2;
+    UINTN  Lbn:4;
+    UINTN  Wt:1;
+    UINTN  Res0:3;
+    UINTN  Mask:5;
+    UINTN  Ssce:1;
+    UINTN  Res1:34;
+  } Bits;
+  UINTN UintN;
+} DBG_WCR;
 
 //
 // Structures used by the arch-agnostic code.
@@ -86,6 +61,36 @@ UINT32  ArchExceptionTypes[] = {
   EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS,
   MAX_UINT32 // End of list
 };
+
+// Structure to more simply access the debug registers.
+typedef
+UINT64
+(*DEBUG_READ_REGISTER)(
+  VOID
+  );
+
+typedef
+VOID
+(*DEBUG_WRITE_REGISTER)(
+  UINT64 Value
+  );
+
+typedef struct _DEBUG_WATCHPOINT_REGISTERS {
+  DEBUG_READ_REGISTER ReadValue;
+  DEBUG_WRITE_REGISTER WriteValue;
+  DEBUG_READ_REGISTER ReadControl;
+  DEBUG_WRITE_REGISTER WriteControl;
+} DEBUG_WATCHPOINT_REGISTERS;
+
+DEBUG_WATCHPOINT_REGISTERS DebugWatchpointRegisters[] = {
+  {DebugReadDbgWvr0El1, DebugWriteDbgWvr0El1, DebugReadDbgWcr0El1, DebugWriteDbgWcr0El1},
+  {DebugReadDbgWvr1El1, DebugWriteDbgWvr1El1, DebugReadDbgWcr1El1, DebugWriteDbgWcr1El1},
+  {DebugReadDbgWvr2El1, DebugWriteDbgWvr2El1, DebugReadDbgWcr2El1, DebugWriteDbgWcr2El1},
+  {DebugReadDbgWvr3El1, DebugWriteDbgWvr3El1, DebugReadDbgWcr3El1, DebugWriteDbgWcr3El1}
+};
+
+// Most hardware implementation support more then 4, but thi
+#define MAX_WATCHPOINTS (sizeof(DebugWatchpointRegisters) / sizeof(DebugWatchpointRegisters[0]))
 
 /**
   This routine handles synchronous exceptions.
@@ -265,12 +270,14 @@ DebugArchInit (
   )
 {
   UINT64  Value;
+  UINTN   Index;
 
   //
   // For AARCH64 debugging to work, the following must be true.
   //    1. OS Lock is unlocked.
   //    2. Enabled the kernel and monitor debug bits in the MDSCR
-  //    3. Enabled debug exceptions in the DAIF
+  //    3. Clear watchpoint registers
+  //    4. Enabled debug exceptions in the DAIF
   //
 
   // Make sure debug exceptions are disable in the DAIF while configuring in case
@@ -292,6 +299,12 @@ DebugArchInit (
   Value  = DebugReadMdscrEl1 ();
   Value |= (MDSCR_MDE | MDSCR_KDE);
   DebugWriteMdscrEl1 (Value);
+
+  // Clear watchpoints.
+  for (Index = 0; Index < MAX_WATCHPOINTS; Index++) {
+    DebugWatchpointRegisters[Index].WriteControl(0);
+  }
+
   SpeculationBarrier ();
 
   // Make sure debug exceptions are enabled in the DAIF.
@@ -448,4 +461,107 @@ IsPageWritable (
   )
 {
   return CheckPageAccess (Address, TRUE);
+}
+
+/**
+  Adds a AARCH64 hardware watch point.
+
+  @param[in]  Address   The address of the data watch point.
+  @param[in]  Length    The length of the data watch point.
+  @param[in]  Read      Boolean indicated break on read.
+  @param[in]  Write     Boolean indicated break on write.
+
+  @retval  TRUE   The watch point was successfully set.
+  @retval  FALSE  The watch point could not be set.
+**/
+BOOLEAN
+AddWatchpoint (
+  IN UINTN    Address,
+  IN UINTN    Length,
+  IN BOOLEAN  Read,
+  IN BOOLEAN  Write
+  )
+{
+  UINTN Index;
+  UINTN Bas;
+  UINTN Lsc;
+  DBG_WCR DbgWcr;
+
+
+  // Byte Address Select is a bitmap where each bit in Address + N up to +7.
+  // shift away full 8 by (8 - count) to get this.
+  Bas = (0xFF >> (8 - MIN(Length, 8)));
+  Lsc = (Read ? BIT0 : 0) | (Write ? BIT1 : 0);
+
+  // Check for duplicates.
+  for (Index = 0; Index < MAX_WATCHPOINTS; Index++) {
+    DbgWcr.UintN = DebugWatchpointRegisters[Index].ReadControl();
+    if (DbgWcr.Bits.Enabled && (DbgWcr.Bits.Bas == Bas) && (DbgWcr.Bits.Lsc == Lsc) && DebugWatchpointRegisters[Index].ReadValue() == Address) {
+      return TRUE;
+    }
+  }
+
+  // Find an empty spot and fill it.
+  for (Index = 0; Index < MAX_WATCHPOINTS; Index++) {
+    DbgWcr.UintN = DebugWatchpointRegisters[Index].ReadControl();
+    if (!DbgWcr.Bits.Enabled) {
+      DbgWcr.UintN = 0;
+      DbgWcr.Bits.Enabled = 1;
+      DbgWcr.Bits.Lsc = Lsc;
+      DbgWcr.Bits.Bas = Bas;
+
+      // These are required to trap at all level in the normal world. Refer to
+      // table D2-13 in the ARM A profile reference manual.
+      DbgWcr.Bits.Hmc = 1;
+      DbgWcr.Bits.Ssc = 0b01;
+      DbgWcr.Bits.Pac = 0b11;
+      DebugWatchpointRegisters[Index].WriteValue(Address);
+      DebugWatchpointRegisters[Index].WriteControl(DbgWcr.UintN);
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+  Removes a AARCH64 hardware watch point.
+
+  @param[in]  Address   The address of the data watch point.
+  @param[in]  Length    The length of the data watch point.
+  @param[in]  Read      Boolean indicated break on read.
+  @param[in]  Write     Boolean indicated break on write.
+
+  @retval  TRUE   The watch point was successfully removed.
+  @retval  FALSE  The watch point could not be removed or did not exist.
+**/
+BOOLEAN
+RemoveWatchpoint (
+  IN UINTN    Address,
+  IN UINTN    Length,
+  IN BOOLEAN  Read,
+  IN BOOLEAN  Write
+  )
+{
+  UINTN Index;
+  UINTN Bas;
+  UINTN Lsc;
+  DBG_WCR DbgWcr;
+
+
+  // Byte Address Select is a bitmap where each bit in Address + N up to +7.
+  // shift away full 8 by (8 - count) to get this.
+  Bas = (0xFF >> (8 - MIN(Length, 8)));
+  Lsc = (Read ? BIT0 : 0) | (Write ? BIT1 : 0);
+
+  // Check for duplicates.
+  for (Index = 0; Index < MAX_WATCHPOINTS; Index++) {
+    DbgWcr.UintN = DebugWatchpointRegisters[Index].ReadControl();
+    if (DbgWcr.Bits.Enabled && (DbgWcr.Bits.Bas == Bas) && (DbgWcr.Bits.Lsc == Lsc) && (DebugWatchpointRegisters[Index].ReadValue() == Address)) {
+      DebugWatchpointRegisters[Index].WriteControl(0);
+      return TRUE;
+    }
+  }
+
+  return FALSE;
 }
