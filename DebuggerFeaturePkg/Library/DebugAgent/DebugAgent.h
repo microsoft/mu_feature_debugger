@@ -206,18 +206,18 @@ DebugArchInit (
 
 BOOLEAN
 AddWatchpoint (
-  IN UINTN Address,
-  IN UINTN Length,
-  IN BOOLEAN Read,
-  IN BOOLEAN Write
+  IN UINTN    Address,
+  IN UINTN    Length,
+  IN BOOLEAN  Read,
+  IN BOOLEAN  Write
   );
 
 BOOLEAN
 RemoveWatchpoint (
-  IN UINTN Address,
-  IN UINTN Length,
-  IN BOOLEAN Read,
-  IN BOOLEAN Write
+  IN UINTN    Address,
+  IN UINTN    Length,
+  IN BOOLEAN  Read,
+  IN BOOLEAN  Write
   );
 
 #endif

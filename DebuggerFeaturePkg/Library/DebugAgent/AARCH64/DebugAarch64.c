@@ -34,20 +34,20 @@
 
 typedef union _DBG_WCR {
   struct {
-    UINTN  Enabled:1;
-    UINTN  Pac:2;
-    UINTN  Lsc:2;
-    UINTN  Bas:8;
-    UINTN  Hmc:1;
-    UINTN  Ssc:2;
-    UINTN  Lbn:4;
-    UINTN  Wt:1;
-    UINTN  Res0:3;
-    UINTN  Mask:5;
-    UINTN  Ssce:1;
-    UINTN  Res1:34;
+    UINTN    Enabled : 1;
+    UINTN    Pac     : 2;
+    UINTN    Lsc     : 2;
+    UINTN    Bas     : 8;
+    UINTN    Hmc     : 1;
+    UINTN    Ssc     : 2;
+    UINTN    Lbn     : 4;
+    UINTN    Wt      : 1;
+    UINTN    Res0    : 3;
+    UINTN    Mask    : 5;
+    UINTN    Ssce    : 1;
+    UINTN    Res1    : 34;
   } Bits;
-  UINTN UintN;
+  UINTN    UintN;
 } DBG_WCR;
 
 //
@@ -72,25 +72,25 @@ UINT64
 typedef
 VOID
 (*DEBUG_WRITE_REGISTER)(
-  UINT64 Value
+  UINT64  Value
   );
 
 typedef struct _DEBUG_WATCHPOINT_REGISTERS {
-  DEBUG_READ_REGISTER ReadValue;
-  DEBUG_WRITE_REGISTER WriteValue;
-  DEBUG_READ_REGISTER ReadControl;
-  DEBUG_WRITE_REGISTER WriteControl;
+  DEBUG_READ_REGISTER     ReadValue;
+  DEBUG_WRITE_REGISTER    WriteValue;
+  DEBUG_READ_REGISTER     ReadControl;
+  DEBUG_WRITE_REGISTER    WriteControl;
 } DEBUG_WATCHPOINT_REGISTERS;
 
-DEBUG_WATCHPOINT_REGISTERS DebugWatchpointRegisters[] = {
-  {DebugReadDbgWvr0El1, DebugWriteDbgWvr0El1, DebugReadDbgWcr0El1, DebugWriteDbgWcr0El1},
-  {DebugReadDbgWvr1El1, DebugWriteDbgWvr1El1, DebugReadDbgWcr1El1, DebugWriteDbgWcr1El1},
-  {DebugReadDbgWvr2El1, DebugWriteDbgWvr2El1, DebugReadDbgWcr2El1, DebugWriteDbgWcr2El1},
-  {DebugReadDbgWvr3El1, DebugWriteDbgWvr3El1, DebugReadDbgWcr3El1, DebugWriteDbgWcr3El1}
+DEBUG_WATCHPOINT_REGISTERS  DebugWatchpointRegisters[] = {
+  { DebugReadDbgWvr0El1, DebugWriteDbgWvr0El1, DebugReadDbgWcr0El1, DebugWriteDbgWcr0El1 },
+  { DebugReadDbgWvr1El1, DebugWriteDbgWvr1El1, DebugReadDbgWcr1El1, DebugWriteDbgWcr1El1 },
+  { DebugReadDbgWvr2El1, DebugWriteDbgWvr2El1, DebugReadDbgWcr2El1, DebugWriteDbgWcr2El1 },
+  { DebugReadDbgWvr3El1, DebugWriteDbgWvr3El1, DebugReadDbgWcr3El1, DebugWriteDbgWcr3El1 }
 };
 
 // Most hardware implementation support more then 4, but thi
-#define MAX_WATCHPOINTS (sizeof(DebugWatchpointRegisters) / sizeof(DebugWatchpointRegisters[0]))
+#define MAX_WATCHPOINTS  (sizeof(DebugWatchpointRegisters) / sizeof(DebugWatchpointRegisters[0]))
 
 /**
   This routine handles synchronous exceptions.
@@ -302,7 +302,7 @@ DebugArchInit (
 
   // Clear watchpoints.
   for (Index = 0; Index < MAX_WATCHPOINTS; Index++) {
-    DebugWatchpointRegisters[Index].WriteControl(0);
+    DebugWatchpointRegisters[Index].WriteControl (0);
   }
 
   SpeculationBarrier ();
@@ -482,41 +482,40 @@ AddWatchpoint (
   IN BOOLEAN  Write
   )
 {
-  UINTN Index;
-  UINTN Bas;
-  UINTN Lsc;
-  DBG_WCR DbgWcr;
-
+  UINTN    Index;
+  UINTN    Bas;
+  UINTN    Lsc;
+  DBG_WCR  DbgWcr;
 
   // Byte Address Select is a bitmap where each bit in Address + N up to +7.
   // shift away full 8 by (8 - count) to get this.
-  Bas = (0xFF >> (8 - MIN(Length, 8)));
+  Bas = (0xFF >> (8 - MIN (Length, 8)));
   Lsc = (Read ? BIT0 : 0) | (Write ? BIT1 : 0);
 
   // Check for duplicates.
   for (Index = 0; Index < MAX_WATCHPOINTS; Index++) {
-    DbgWcr.UintN = DebugWatchpointRegisters[Index].ReadControl();
-    if (DbgWcr.Bits.Enabled && (DbgWcr.Bits.Bas == Bas) && (DbgWcr.Bits.Lsc == Lsc) && DebugWatchpointRegisters[Index].ReadValue() == Address) {
+    DbgWcr.UintN = DebugWatchpointRegisters[Index].ReadControl ();
+    if (DbgWcr.Bits.Enabled && (DbgWcr.Bits.Bas == Bas) && (DbgWcr.Bits.Lsc == Lsc) && (DebugWatchpointRegisters[Index].ReadValue () == Address)) {
       return TRUE;
     }
   }
 
   // Find an empty spot and fill it.
   for (Index = 0; Index < MAX_WATCHPOINTS; Index++) {
-    DbgWcr.UintN = DebugWatchpointRegisters[Index].ReadControl();
+    DbgWcr.UintN = DebugWatchpointRegisters[Index].ReadControl ();
     if (!DbgWcr.Bits.Enabled) {
-      DbgWcr.UintN = 0;
+      DbgWcr.UintN        = 0;
       DbgWcr.Bits.Enabled = 1;
-      DbgWcr.Bits.Lsc = Lsc;
-      DbgWcr.Bits.Bas = Bas;
+      DbgWcr.Bits.Lsc     = Lsc;
+      DbgWcr.Bits.Bas     = Bas;
 
       // These are required to trap at all level in the normal world. Refer to
       // table D2-13 in the ARM A profile reference manual.
       DbgWcr.Bits.Hmc = 1;
       DbgWcr.Bits.Ssc = 0b01;
       DbgWcr.Bits.Pac = 0b11;
-      DebugWatchpointRegisters[Index].WriteValue(Address);
-      DebugWatchpointRegisters[Index].WriteControl(DbgWcr.UintN);
+      DebugWatchpointRegisters[Index].WriteValue (Address);
+      DebugWatchpointRegisters[Index].WriteControl (DbgWcr.UintN);
       return TRUE;
     }
   }
@@ -543,22 +542,21 @@ RemoveWatchpoint (
   IN BOOLEAN  Write
   )
 {
-  UINTN Index;
-  UINTN Bas;
-  UINTN Lsc;
-  DBG_WCR DbgWcr;
-
+  UINTN    Index;
+  UINTN    Bas;
+  UINTN    Lsc;
+  DBG_WCR  DbgWcr;
 
   // Byte Address Select is a bitmap where each bit in Address + N up to +7.
   // shift away full 8 by (8 - count) to get this.
-  Bas = (0xFF >> (8 - MIN(Length, 8)));
+  Bas = (0xFF >> (8 - MIN (Length, 8)));
   Lsc = (Read ? BIT0 : 0) | (Write ? BIT1 : 0);
 
   // Check for duplicates.
   for (Index = 0; Index < MAX_WATCHPOINTS; Index++) {
-    DbgWcr.UintN = DebugWatchpointRegisters[Index].ReadControl();
-    if (DbgWcr.Bits.Enabled && (DbgWcr.Bits.Bas == Bas) && (DbgWcr.Bits.Lsc == Lsc) && (DebugWatchpointRegisters[Index].ReadValue() == Address)) {
-      DebugWatchpointRegisters[Index].WriteControl(0);
+    DbgWcr.UintN = DebugWatchpointRegisters[Index].ReadControl ();
+    if (DbgWcr.Bits.Enabled && (DbgWcr.Bits.Bas == Bas) && (DbgWcr.Bits.Lsc == Lsc) && (DebugWatchpointRegisters[Index].ReadValue () == Address)) {
+      DebugWatchpointRegisters[Index].WriteControl (0);
       return TRUE;
     }
   }

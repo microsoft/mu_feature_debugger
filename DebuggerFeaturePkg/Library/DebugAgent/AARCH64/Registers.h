@@ -68,6 +68,7 @@ VOID
 DebugWriteDbgWcr0El1 (
   IN UINT64  Value
   );
+
 UINT64
 DebugReadDbgWvr1El1 (
   VOID
@@ -87,6 +88,7 @@ VOID
 DebugWriteDbgWcr1El1 (
   IN UINT64  Value
   );
+
 UINT64
 DebugReadDbgWvr2El1 (
   VOID
@@ -106,6 +108,7 @@ VOID
 DebugWriteDbgWcr2El1 (
   IN UINT64  Value
   );
+
 UINT64
 DebugReadDbgWvr3El1 (
   VOID
