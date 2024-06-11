@@ -89,7 +89,8 @@ DEBUG_WATCHPOINT_REGISTERS  DebugWatchpointRegisters[] = {
   { DebugReadDbgWvr3El1, DebugWriteDbgWvr3El1, DebugReadDbgWcr3El1, DebugWriteDbgWcr3El1 }
 };
 
-// Most hardware implementation support more then 4, but thi
+// Most hardware implementation support more then 4. This was a chosen upper bound
+// to avoid adding too much assembly wrapper code.
 #define MAX_WATCHPOINTS  (sizeof(DebugWatchpointRegisters) / sizeof(DebugWatchpointRegisters[0]))
 
 /**
