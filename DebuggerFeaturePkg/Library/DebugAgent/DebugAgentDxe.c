@@ -477,7 +477,6 @@ AccessMemory (
 
         AttributesChanged = TRUE;
       }
-
     } else if (Write) {
       if (!IsPageWritable (Address)) {
         return FALSE;
