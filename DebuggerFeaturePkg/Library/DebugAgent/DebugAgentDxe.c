@@ -459,24 +459,17 @@ AccessMemory (
         return FALSE;
       }
 
+      if (Attributes & EFI_MEMORY_RP) {
+        // Treat RP memory as non-valid.
+        return FALSE;
+      }
+
       if (Write && (Attributes & EFI_MEMORY_RO)) {
         Status = mMemoryAttributeProtocol->ClearMemoryAttributes (
                                              mMemoryAttributeProtocol,
                                              Address & ~EFI_PAGE_MASK,
                                              EFI_PAGE_SIZE,
-                                             EFI_MEMORY_RO | EFI_MEMORY_RP
-                                             );
-        if (EFI_ERROR (Status)) {
-          return FALSE;
-        }
-
-        AttributesChanged = TRUE;
-      } else if (Attributes & EFI_MEMORY_RP) {
-        Status = mMemoryAttributeProtocol->ClearMemoryAttributes (
-                                             mMemoryAttributeProtocol,
-                                             Address & ~EFI_PAGE_MASK,
-                                             EFI_PAGE_SIZE,
-                                             EFI_MEMORY_RP
+                                             EFI_MEMORY_RO
                                              );
         if (EFI_ERROR (Status)) {
           return FALSE;
