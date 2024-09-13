@@ -179,11 +179,9 @@ DebuggerExceptionHandler (
       break;
 
     default:
-
-      //
-      // Miscellaneous unhandled situations
-      //
-      CpuDeadLoop ();
+      ExceptionInfo.ExceptionType    = ExceptionGenericFault;
+      ExceptionInfo.ExceptionAddress = Context->ELR;
+      break;
   }
 
   ExceptionInfo.ArchExceptionCode = ExceptionType;

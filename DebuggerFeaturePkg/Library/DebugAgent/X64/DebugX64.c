@@ -134,17 +134,10 @@ DebuggerExceptionHandler (
     case EXCEPT_X64_DOUBLE_FAULT:
     case EXCEPT_X64_SEG_NOT_PRESENT:
     case EXCEPT_X64_GP_FAULT:
+    default:
       ExceptionInfo.ExceptionType    = ExceptionGenericFault;
       ExceptionInfo.ExceptionAddress = Context->Rip;
       break;
-
-    default:
-
-      //
-      // Unhandled situations
-      //
-
-      CpuDeadLoop ();
   }
 
   ExceptionInfo.ArchExceptionCode = InterruptType;
