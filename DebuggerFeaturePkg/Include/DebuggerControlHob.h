@@ -15,7 +15,8 @@ typedef struct _DEBUGGER_CONTROL_HOB {
       UINT32    InitialBreakpoint : 1;
       UINT32    DxeDebugEnabled   : 1;
       UINT32    MmDebugEnabled    : 1;
-      UINT32    Unused            : 29;
+      UINT32    DisablePolling    : 1;
+      UINT32    Unused            : 28;
     } Flags;
 
     UINT32    AsUint32;
