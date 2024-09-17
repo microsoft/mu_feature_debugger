@@ -63,6 +63,7 @@ STATIC EFI_EVENT  mCpuArchEvent;
 STATIC EFI_EVENT  mLoadedImageEvent;
 STATIC EFI_EVENT  mExitBootServicesEvent;
 STATIC BOOLEAN    mDebuggerInitialized;
+STATIC BOOLEAN    mDisablePolling;
 STATIC CHAR8      mDbgBreakOnModuleLoadString[64] = { 0 };
 
 /**
@@ -604,7 +605,7 @@ DxeDebugSetupCallbacks (
     }
   }
 
-  if (gTimer == NULL) {
+  if (!mDisablePolling && (gTimer == NULL)) {
     DEBUG ((DEBUG_INFO, "%a: Timer Arch protocol not installed. Registering for notification\n", __FUNCTION__));
     mTimerEvent = EfiCreateProtocolNotifyEvent (
                     &gEfiTimerArchProtocolGuid,
@@ -730,6 +731,7 @@ InitializeDebugAgent (
       return;
     }
 
+    mDisablePolling      = DebugHob->Control.Flags.DisablePolling;
     mDebuggerInitialized = TRUE;
 
     //
