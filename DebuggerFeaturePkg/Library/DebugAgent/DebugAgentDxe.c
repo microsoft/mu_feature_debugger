@@ -731,7 +731,7 @@ InitializeDebugAgent (
       return;
     }
 
-    mDisablePolling      = DebugHob->Control.Flags.DisablePolling;
+    mDisablePolling      = (DebugHob->Control.Flags.DisablePolling != 0);
     mDebuggerInitialized = TRUE;
 
     //
