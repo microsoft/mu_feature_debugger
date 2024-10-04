@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         configuration: [Debug, Release]
-        platform: [x64]
+        platform: [x64, arm64]
     runs-on: windows-2022
     permissions:
       contents: write
@@ -53,4 +53,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload ${{ github.event.release.tag_name }} UefiDbgExt\${{ matrix.platform }}\${{ matrix.configuration }}\uefiext.dll
+          Compress-Archive -Path UefiDbgExt\${{ matrix.platform }}\${{ matrix.configuration }}\uefiext.dll -DestinationPath UefiExt_${{ matrix.platform }}.zip
+          gh release upload ${{ github.event.release.tag_name }} UefiExt_${{ matrix.platform }}.zip

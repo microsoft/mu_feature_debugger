@@ -17,3 +17,6 @@ MU_BASECORE/
 # UEFI Ext Build
 UefiDbgExt/uefiext/
 UefiDbgExt/x64/
+UefiDbgExt/ARM64/
+UefiDbgExt/.vs/
+UefiDbgExt/uefiext.vcxproj.user
