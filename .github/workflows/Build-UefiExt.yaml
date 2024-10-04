@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         configuration: [Debug, Release]
-        platform: [x64]
+        platform: [x64, arm64]
     runs-on: windows-2022
     permissions:
       contents: write
