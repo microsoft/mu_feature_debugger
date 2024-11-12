@@ -205,11 +205,11 @@ GDB is currently only functional with AARCH64 due to bugs in the x64 features fi
 To connect to the GDB server, launch GDB with the following command.
 
 ```sh
-gdb-multiarch -ex "target remote localhost:5555" -ex "source MU_FEATURE_DEBUGGER/BaseTools/Scripts/efi_gdb.py"
+gdb-multiarch -ex "target remote localhost:5555" -ex "source MU_FEATURE_DEBUGGER/Scripts/efi_gdb.py"
 ```
 
 `target remote localhost:5555` will attach to the GDB port and
-`source MU_FEATURE_DEBUGGER/BaseTools/Scripts/efi_gdb.py` will load symbols from a local
+`source MU_FEATURE_DEBUGGER/Scripts/efi_gdb.py` will load symbols from a local
 build and add some UEFI commands. The target command can be altered for port, or
 device as needed.
 
@@ -239,7 +239,7 @@ using the [C/C++ Extension](https://marketplace.visualstudio.com/items?itemName=
 Note that the `program` value is just to satisy the extension. It must be a valid
 application, but will not matter for the actual debugging.
 
-After connecting, run `-exec source MU_FEATURE_DEBUGGER/BaseTools/Scripts/efi_gdb.py` from
+After connecting, run `-exec source MU_FEATURE_DEBUGGER/Scripts/efi_gdb.py` from
 the `DEBUG CONSOLE` tab to load symbols. This will require that the debugger be
 stepped or executed before the symbols will take place.
 
@@ -254,7 +254,7 @@ can be changed as appropriate.
 # AARCH64
 gdbgui -g "gdb-multiarch -ex 'target remote localhost:5555' -ex 'source MU_FEATURE_DEBUGGER/Scripts/efi_gdb.py'"
 # X64
-gdbgui -g "gdb -ex 'target remote localhost:5555' -ex 'source MU_FEATURE_DEBUGGER/BaseTools/Scripts/efi_gdb.py'"
+gdbgui -g "gdb -ex 'target remote localhost:5555' -ex 'source MU_FEATURE_DEBUGGER/Scripts/efi_gdb.py'"
 ```
 
 ## Custom GDB Server Commands
