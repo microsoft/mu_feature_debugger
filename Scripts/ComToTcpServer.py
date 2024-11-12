@@ -48,6 +48,10 @@ def socket_thread():
         conn, addr = sock.accept()
         print(f"Socket Connected - {addr}")
 
+        # clear the out queue before starting a connection
+        while not out_queue.empty():
+            out_queue.get()
+
         # use a short timeout to move on if no data is ready.
         conn.settimeout(0.01)
 
