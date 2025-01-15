@@ -319,62 +319,71 @@ advlog (
   if (Version == 4) {
     GetFieldValue (InfoAddress, "ADVANCED_LOGGER_INFO", "LogBuffer", EntryAddress);
     GetFieldValue (InfoAddress, "ADVANCED_LOGGER_INFO", "LogCurrent", EndAddress);
-    if (EndAddress < EntryAddress) {
-      dprintf ("Looped logs not yet implemented in extension!\n");
-      Result = ERROR_NOT_SUPPORTED;
-      goto Exit;
-    } else {
-      // non-loop optimization, only download through the last message.
-      LogBufferSize = min (LogBufferSize, (ULONG)(EndAddress - InfoAddress));
-    }
-
-    LogBuffer = (CHAR *)malloc (LogBufferSize);
-
-    // Output() forces IO flush to inform user.
-    g_ExtControl->Output (DEBUG_OUTPUT_NORMAL, "Reading log (0x%x bytes) ... \n", LogBufferSize);
-    ReadMemory (InfoAddress, LogBuffer, LogBufferSize, &BytesRead);
-    if (BytesRead != LogBufferSize) {
-      dprintf ("Failed to read log memory!\n");
-      Result = ERROR_BAD_LENGTH;
-      goto Exit;
-    }
-
-    Offset = (ULONG)(EntryAddress - InfoAddress);
-    End    = (ULONG)(EndAddress - InfoAddress);
-
-    dprintf ("\n------------------------------------------------------------------------------\n");
-    BOOLEAN  PrevNL = TRUE;
-    while (Offset < End) {
-      Entry = (ADVANCED_LOGGER_MESSAGE_ENTRY_V2 *)(LogBuffer + Offset);
-      if (Entry->Signature != 0x324d4c41) {
-        dprintf ("\nBad message signature!!\n");
-        break;
-      }
-
-      ULONG  StringEnd = Offset + Entry->MessageOffset + Entry->MessageLen;
-      CHAR   Temp      = LogBuffer[StringEnd];
-      LogBuffer[StringEnd] = 0;
-
-      if (PrevNL) {
-        dprintf (
-          "%-8s| %-8s| ",
-          (Entry->Phase < PHASE_COUNT ? PhaseStrings[Entry->Phase] : "UNK"),
-          ErrorLevelToString (Entry->DebugLevel)
-          );
-      }
-
-      dprintf ("%s", LogBuffer + Offset + Entry->MessageOffset);
-      PrevNL = (LogBuffer[StringEnd - 1] == '\n');
-
-      LogBuffer[StringEnd] = Temp;
-
-      Offset = ALIGN_UP (Offset + Entry->MessageOffset + Entry->MessageLen, 8);
-    }
-
-    dprintf ("\n------------------------------------------------------------------------------\n");
+  } else if (Version == 5) {
+    GetFieldValue (InfoAddress, "ADVANCED_LOGGER_INFO", "LogBufferOffset", EntryAddress);
+    EntryAddress += InfoAddress;
+    GetFieldValue (InfoAddress, "ADVANCED_LOGGER_INFO", "LogCurrentOffset", EndAddress);
+    EndAddress += InfoAddress;
   } else {
     dprintf ("\nVersion not implemented in debug extension!\n");
+    Result = ERROR_NOT_SUPPORTED;
+    goto Exit;
   }
+
+  if (EndAddress < EntryAddress) {
+    dprintf ("Looped logs not yet implemented in extension!\n");
+    Result = ERROR_NOT_SUPPORTED;
+    goto Exit;
+  } else {
+    // non-loop optimization, only download through the last message.
+    LogBufferSize = min (LogBufferSize, (ULONG)(EndAddress - InfoAddress));
+  }
+
+  LogBuffer = (CHAR *)malloc (LogBufferSize);
+
+  // Output() forces IO flush to inform user.
+  g_ExtControl->Output (DEBUG_OUTPUT_NORMAL, "Reading log (0x%x bytes) ... \n", LogBufferSize);
+  ReadMemory (InfoAddress, LogBuffer, LogBufferSize, &BytesRead);
+  if (BytesRead != LogBufferSize) {
+    dprintf ("Failed to read log memory!\n");
+    Result = ERROR_BAD_LENGTH;
+    goto Exit;
+  }
+
+  Offset = (ULONG)(EntryAddress - InfoAddress);
+  End    = (ULONG)(EndAddress - InfoAddress);
+
+  dprintf ("\n------------------------------------------------------------------------------\n");
+  BOOLEAN  PrevNL = TRUE;
+
+  while (Offset < End) {
+    Entry = (ADVANCED_LOGGER_MESSAGE_ENTRY_V2 *)(LogBuffer + Offset);
+    if (Entry->Signature != 0x324d4c41) {
+      dprintf ("\nBad message signature!!\n");
+      break;
+    }
+
+    ULONG  StringEnd = Offset + Entry->MessageOffset + Entry->MessageLen;
+    CHAR   Temp      = LogBuffer[StringEnd];
+    LogBuffer[StringEnd] = 0;
+
+    if (PrevNL) {
+      dprintf (
+        "%-8s| %-8s| ",
+        (Entry->Phase < PHASE_COUNT ? PhaseStrings[Entry->Phase] : "UNK"),
+        ErrorLevelToString (Entry->DebugLevel)
+        );
+    }
+
+    dprintf ("%s", LogBuffer + Offset + Entry->MessageOffset);
+    PrevNL = (LogBuffer[StringEnd - 1] == '\n');
+
+    LogBuffer[StringEnd] = Temp;
+
+    Offset = ALIGN_UP (Offset + Entry->MessageOffset + Entry->MessageLen, 8);
+  }
+
+  dprintf ("\n------------------------------------------------------------------------------\n");
 
   Result = S_OK;
 
