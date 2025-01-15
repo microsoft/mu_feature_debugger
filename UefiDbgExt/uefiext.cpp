@@ -44,8 +44,10 @@ setenv (
     gUefiEnv = DXE;
   } else if (_stricmp (args, "MM") == 0) {
     gUefiEnv = MM;
+  } else if (_stricmp (args, "rust") == 0) {
+    gUefiEnv = RUST;
   } else {
-    dprintf ("Unknown environment type! Supported types: PEI, DXE, MM");
+    dprintf ("Unknown environment type! Supported types: PEI, DXE, MM, rust\n");
   }
 
   EXIT_API ();
@@ -72,6 +74,7 @@ help (
     "  findall             - Attempts to detect environment and load all modules\n"
     "  findmodule          - Find the currently running module\n"
     "  loadmodules         - Find and loads symbols for all modules in the debug list\n"
+    "  elf                 - Dumps the headers of an ELF image\n"
     "\nData Parsing:\n"
     "  memorymap           - Prints the current memory map\n"
     "  hobs                - Enumerates the hand off blocks\n"
@@ -102,6 +105,7 @@ init (
   ULONG  TargetClass = 0;
   ULONG  TargetQual  = 0;
   ULONG  Mask;
+  PCSTR  Output;
 
   INIT_API ();
 
@@ -115,15 +119,90 @@ init (
     Client->GetOutputMask (&Mask);
     Client->SetOutputMask (Mask | DEBUG_OUTPUT_VERBOSE);
 
-    dprintf ("EXDI Connection, scanning for images.\n");
-    g_ExtControl->Execute (
-                    DEBUG_OUTCTL_ALL_CLIENTS,
-                    "!findall",
-                    DEBUG_EXECUTE_DEFAULT
-                    );
+    // Detect if this is a UEFI software debugger.
+    Output = ExecuteCommandWithOutput (Client, ".exdicmd target:0:?");
+    if (strstr (Output, "Rust Debugger") != NULL) {
+      dprintf ("Rust UEFI Debugger detected.");
+      gUefiEnv = RUST;
+    } else if (strstr (Output, "DXE UEFI Debugger") != NULL) {
+      dprintf ("DXE UEFI Debugger detected.");
+      gUefiEnv = DXE;
+    } else {
+      dprintf ("Unknown environment, assuming DXE.");
+      gUefiEnv = DXE;
+    }
+
+    dprintf ("Scanning for images.\n");
+    if (gUefiEnv == DXE) {
+      g_ExtControl->Execute (
+                      DEBUG_OUTCTL_ALL_CLIENTS,
+                      "!uefiext.findall",
+                      DEBUG_EXECUTE_DEFAULT
+                      );
+    } else {
+      g_ExtControl->Execute (
+                      DEBUG_OUTCTL_ALL_CLIENTS,
+                      "!uefiext.findmodule",
+                      DEBUG_EXECUTE_DEFAULT
+                      );
+    }
   }
 
   EXIT_API ();
 
   return S_OK;
+}
+
+// Used to capture output from debugger commands
+CHAR  mOutput[1024];
+
+class OutputCallbacks : public IDebugOutputCallbacks {
+public:
+
+STDMETHOD (QueryInterface)(THIS_ REFIID InterfaceId, PVOID *Interface) {
+  if (InterfaceId == __uuidof (IDebugOutputCallbacks)) {
+    *Interface = (IDebugOutputCallbacks *)this;
+    AddRef ();
+    return S_OK;
+  } else {
+    *Interface = NULL;
+    return E_NOINTERFACE;
+  }
+}
+
+STDMETHOD_ (ULONG, AddRef)(THIS) {
+  return 1;
+}
+
+STDMETHOD_ (ULONG, Release)(THIS) {
+  return 1;
+}
+
+STDMETHOD (Output)(THIS_ ULONG Mask, PCSTR Text) {
+  strcpy_s (mOutput, sizeof (mOutput), Text);
+  return S_OK;
+}
+};
+
+OutputCallbacks  mOutputCallback;
+
+PCSTR
+ExecuteCommandWithOutput (
+  PDEBUG_CLIENT4  Client,
+  PCSTR           Command
+  )
+{
+  PDEBUG_OUTPUT_CALLBACKS  Callbacks;
+
+  ZeroMemory (mOutput, sizeof (mOutput));
+
+  Client->GetOutputCallbacks (&Callbacks);
+  Client->SetOutputCallbacks (&mOutputCallback);
+  g_ExtControl->Execute (
+                  DEBUG_OUTCTL_ALL_CLIENTS,
+                  Command,
+                  DEBUG_EXECUTE_DEFAULT
+                  );
+  Client->SetOutputCallbacks (Callbacks);
+  return mOutput;
 }

@@ -44,7 +44,12 @@ modulebreak (
 
   INIT_API ();
 
-  sprintf_s (Command, sizeof (Command), ".exdicmd target:0:b%s", args);
+  if (RUST == gUefiEnv) {
+    sprintf_s (Command, sizeof (Command), ".exdicmd target:0:mod break %s", args);
+  } else {
+    sprintf_s (Command, sizeof (Command), ".exdicmd target:0:b%s", args);
+  }
+
   g_ExtControl->Execute (
                   DEBUG_OUTCTL_ALL_CLIENTS,
                   Command,

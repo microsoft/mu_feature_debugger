@@ -34,6 +34,7 @@ typedef enum _UEFI_ENV {
   PEI,
   DXE,
   MM,
+  RUST,
   UNKNOWN
 } UEFI_ENV;
 
@@ -80,4 +81,10 @@ GuidToString (
 PCSTR
 ErrorLevelToString (
   UINT32  ErrorLevel
+  );
+
+PCSTR
+ExecuteCommandWithOutput (
+  PDEBUG_CLIENT4  Client,
+  PCSTR           Command
   );
