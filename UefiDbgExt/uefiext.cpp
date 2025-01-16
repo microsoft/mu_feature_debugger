@@ -123,13 +123,13 @@ init (
     // Detect if this is a UEFI software debugger.
     Output = ExecuteCommandWithOutput (Client, ".exdicmd target:0:?");
     if (strstr (Output, "Rust Debugger") != NULL) {
-      dprintf ("Rust UEFI Debugger detected.");
+      dprintf ("Rust UEFI Debugger detected.\n");
       gUefiEnv = RUST;
     } else if (strstr (Output, "DXE UEFI Debugger") != NULL) {
-      dprintf ("DXE UEFI Debugger detected.");
+      dprintf ("DXE UEFI Debugger detected.\n");
       gUefiEnv = DXE;
     } else {
-      dprintf ("Unknown environment, assuming DXE.");
+      dprintf ("Unknown environment, assuming DXE.\n");
       gUefiEnv = DXE;
     }
 
