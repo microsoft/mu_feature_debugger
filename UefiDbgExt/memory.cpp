@@ -22,6 +22,20 @@ Abstract:
 
 #pragma pack (push, 1)
 typedef struct {
+  UINT16    Year;
+  UINT8     Month;
+  UINT8     Day;
+  UINT8     Hour;
+  UINT8     Minute;
+  UINT8     Second;
+  UINT8     Pad1;
+  UINT32    Nanosecond;
+  INT16     TimeZone;
+  UINT8     Daylight;
+  UINT8     Pad2;
+} EFI_TIME;
+
+typedef struct {
   UINT32    Signature;          // Signature
   UINT8     MajorVersion;       // Major version of advanced logger message structure
   UINT8     MinorVersion;       // Minor version of advanced logger message structure
@@ -33,6 +47,29 @@ typedef struct {
                                 // used to calculate the address of the Message
   // CHAR      MessageText[];      // Message Text
 } ADVANCED_LOGGER_MESSAGE_ENTRY_V2;
+
+typedef volatile struct {
+  UINT32      Signature;                          // Signature 'ALOG'
+  UINT16      Version;                            // Current Version
+  UINT16      Reserved[3];                        // Reserved for future
+  UINT32      LogBufferOffset;                    // Offset from LoggerInfo to start of log, expected to be the size of this structure 8 byte aligned
+  UINT32      Reserved4;
+  UINT32      LogCurrentOffset;                   // Offset from LoggerInfo to where to store next log entry.
+  UINT32      DiscardedSize;                      // Number of bytes of messages missed
+  UINT32      LogBufferSize;                      // Size of allocated buffer
+  BOOLEAN     InPermanentRAM;                     // Log in permanent RAM
+  BOOLEAN     AtRuntime;                          // After ExitBootServices
+  BOOLEAN     GoneVirtual;                        // After VirtualAddressChange
+  BOOLEAN     HdwPortInitialized;                 // HdwPort initialized
+  BOOLEAN     HdwPortDisabled;                    // HdwPort is Disabled
+  BOOLEAN     Reserved2[3];                       //
+  UINT64      TimerFrequency;                     // Ticks per second for log timing
+  UINT64      TicksAtTime;                        // Ticks when Time Acquired
+  EFI_TIME    Time;                               // Uefi Time Field
+  UINT32      HwPrintLevel;                       // Logging level to be printed at hw port
+  UINT32      Reserved3;                          //
+} ADVANCED_LOGGER_INFO;
+
 #pragma pack (pop)
 
 PCSTR  MemoryTypeString[] = {
@@ -262,6 +299,7 @@ advlog (
   ULONG                             Offset;
   ULONG                             End;
   ADVANCED_LOGGER_MESSAGE_ENTRY_V2  *Entry;
+  ADVANCED_LOGGER_INFO              Info = { 0 };
 
   // NOTE: This implementation is a crude first past, The following should be done
   // in the future.
@@ -296,8 +334,9 @@ advlog (
     goto Exit;
   }
 
-  GetFieldValue (InfoAddress, "ADVANCED_LOGGER_INFO", "Version", Version);
-  GetFieldValue (InfoAddress, "ADVANCED_LOGGER_INFO", "LogBufferSize", LogBufferSize);
+  ReadMemory (InfoAddress, (PVOID)&Info, sizeof (Info), &BytesRead);
+  Version       = Info.Version;
+  LogBufferSize = Info.LogBufferSize;
 
   g_ExtControl->ControlledOutput (
                   DEBUG_OUTCTL_AMBIENT_DML,
@@ -307,7 +346,7 @@ advlog (
                   InfoAddress
                   );
 
-  dprintf ("Version:  %d\n", Version);
+  dprintf ("Version:  %d\n", Info.Version);
   dprintf ("Size:     0x%x bytes\n", LogBufferSize);
 
   if (LogBufferSize == 0) {
@@ -320,10 +359,8 @@ advlog (
     GetFieldValue (InfoAddress, "ADVANCED_LOGGER_INFO", "LogBuffer", EntryAddress);
     GetFieldValue (InfoAddress, "ADVANCED_LOGGER_INFO", "LogCurrent", EndAddress);
   } else if (Version == 5) {
-    GetFieldValue (InfoAddress, "ADVANCED_LOGGER_INFO", "LogBufferOffset", EntryAddress);
-    EntryAddress += InfoAddress;
-    GetFieldValue (InfoAddress, "ADVANCED_LOGGER_INFO", "LogCurrentOffset", EndAddress);
-    EndAddress += InfoAddress;
+    EntryAddress = InfoAddress + Info.LogBufferOffset;
+    EndAddress   = InfoAddress + Info.LogCurrentOffset;
   } else {
     dprintf ("\nVersion not implemented in debug extension!\n");
     Result = ERROR_NOT_SUPPORTED;
@@ -359,7 +396,7 @@ advlog (
   while (Offset < End) {
     Entry = (ADVANCED_LOGGER_MESSAGE_ENTRY_V2 *)(LogBuffer + Offset);
     if (Entry->Signature != 0x324d4c41) {
-      dprintf ("\nBad message signature!!\n");
+      dprintf ("\nBad message signature!! Entry Offset: 0x%x\n", Offset);
       break;
     }
 
