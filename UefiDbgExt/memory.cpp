@@ -393,7 +393,7 @@ advlog (
   dprintf ("\n------------------------------------------------------------------------------\n");
   BOOLEAN  PrevNL = TRUE;
 
-  while (Offset < End) {
+  while (Offset + sizeof (ADVANCED_LOGGER_MESSAGE_ENTRY_V2) <= End) {
     Entry = (ADVANCED_LOGGER_MESSAGE_ENTRY_V2 *)(LogBuffer + Offset);
     if (Entry->Signature != 0x324d4c41) {
       dprintf ("\nBad message signature!! Entry Offset: 0x%x\n", Offset);
