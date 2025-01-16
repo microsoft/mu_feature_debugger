@@ -85,6 +85,7 @@ help (
     "  advlog              - Prints the advanced logger memory log.\n"
     "\nUEFI Debugger:\n"
     "  info                - Queries information about the UEFI debugger\n"
+    "  monitor             - Sends direct monitor commands\n"
     "  modulebreak         - Sets a break on load for the provided module. e.g. 'shell'\n"
     "  readmsr             - Reads a MSR value (x86 only)\n"
     "  readvar             - Reads a UEFI variable\n"
@@ -186,7 +187,7 @@ STDMETHOD (Output)(THIS_ ULONG Mask, PCSTR Text) {
 
 OutputCallbacks  mOutputCallback;
 
-PCSTR
+PSTR
 ExecuteCommandWithOutput (
   PDEBUG_CLIENT4  Client,
   PCSTR           Command
@@ -205,4 +206,35 @@ ExecuteCommandWithOutput (
                   );
   Client->SetOutputCallbacks (Callbacks);
   return mOutput;
+}
+
+PSTR
+MonitorCommandWithOutput (
+  PDEBUG_CLIENT4  Client,
+  PCSTR           MonitorCommand
+  )
+{
+  CHAR   Command[512];
+  PSTR   Output;
+  ULONG  Mask;
+  PCSTR  Preamble = "Target command response: ";
+  PCSTR  Ending   = "exdiCmd:";
+
+  sprintf_s (Command, sizeof (Command), ".exdicmd target:0:%s", MonitorCommand);
+
+  Client->GetOutputMask (&Mask);
+  Client->SetOutputMask (Mask | DEBUG_OUTPUT_VERBOSE);
+  Output = ExecuteCommandWithOutput (Client, Command);
+  Client->SetOutputMask (Mask);
+
+  // Clean up the output.
+  if (strstr (Output, Preamble) != NULL) {
+    Output = strstr (Output, Preamble) + strlen (Preamble);
+  }
+
+  if (strstr (Output, Ending) != NULL) {
+    *strstr (Output, Ending) = 0;
+  }
+
+  return Output;
 }

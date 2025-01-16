@@ -83,8 +83,14 @@ ErrorLevelToString (
   UINT32  ErrorLevel
   );
 
-PCSTR
+PSTR
 ExecuteCommandWithOutput (
   PDEBUG_CLIENT4  Client,
   PCSTR           Command
+  );
+
+PSTR
+MonitorCommandWithOutput (
+  PDEBUG_CLIENT4  Client,
+  PCSTR           MonitorCommand
   );

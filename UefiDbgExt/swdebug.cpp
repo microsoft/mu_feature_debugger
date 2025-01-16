@@ -143,3 +143,20 @@ reboot (
   EXIT_API ();
   return S_OK;
 }
+
+HRESULT CALLBACK
+monitor (
+  PDEBUG_CLIENT4  Client,
+  PCSTR           args
+  )
+{
+  PSTR  Response;
+
+  INIT_API ();
+
+  Response = MonitorCommandWithOutput (Client, args);
+  dprintf ("%s\n", Response);
+
+  EXIT_API ();
+  return S_OK;
+}
