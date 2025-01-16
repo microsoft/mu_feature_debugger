@@ -26,7 +26,8 @@ FindModuleBackwards (
   CHAR           Command[512];
   ULONG64        MaxSize;
   ULONG32        Check;
-  CONST ULONG32  Magic = 0x5A4D;  // MZ
+  CONST ULONG32  Magic    = 0x5A4D;     // MZ
+  CONST ULONG32  ElfMagic = 0x464C457F; // 0x7F_ELF
   ULONG          BytesRead;
   HRESULT        Result;
   ULONG64        Base;
@@ -50,8 +51,22 @@ FindModuleBackwards (
   for ( ; Address >= MinAddress; Address -= PAGE_SIZE) {
     Check = 0;
     ReadMemory (Address, &Check, sizeof (Check), &BytesRead);
-    if ((BytesRead == sizeof (Check)) && (Check == Magic)) {
+    if (BytesRead != sizeof (Check)) {
+      break;
+    }
+
+    if ((Check & 0xFFFF) == Magic) {
       sprintf_s (&Command[0], sizeof (Command), ".imgscan /l /r %I64x %I64x", Address, Address + 0xFFF);
+      g_ExtControl->Execute (
+                      DEBUG_OUTCTL_ALL_CLIENTS,
+                      &Command[0],
+                      DEBUG_EXECUTE_DEFAULT
+                      );
+
+      Result = S_OK;
+      break;
+    } else if (Check == ElfMagic) {
+      sprintf_s (&Command[0], sizeof (Command), "!uefiext.elf %I64x", Address);
       g_ExtControl->Execute (
                       DEBUG_OUTCTL_ALL_CLIENTS,
                       &Command[0],
@@ -234,6 +249,104 @@ findall (
   //
 
   Result = loadmodules (Client, "");
+
+  EXIT_API ();
+  return S_OK;
+}
+
+#pragma pack (push, 1)
+typedef struct _ELF_HEADER_64 {
+  unsigned char    e_ident[16]; // 0x74 + ELF
+  UINT16           e_type;
+  UINT16           e_machine;
+  UINT32           e_version;
+  UINT64           e_entry;
+  UINT64           e_phoff;
+  UINT64           e_shoff;
+  UINT32           e_flags;
+  UINT16           e_ehsize;
+  UINT16           e_phentsize;
+  UINT16           e_phnum;
+  UINT16           e_shentsize;
+  UINT16           e_shnum;
+  UINT16           e_shstrndx;
+} ELF_HEADER_64;
+C_ASSERT (sizeof (ELF_HEADER_64) == 64);
+
+typedef struct _ELF_SECTION_64 {
+  UINT32    sh_name;
+  UINT16    e_type;
+  UINT16    e_machine;
+  UINT32    e_version;
+  UINT64    e_entry;
+  UINT64    e_phoff;
+  UINT64    e_shoff;
+  UINT32    e_flags;
+  UINT16    e_ehsize;
+  UINT16    e_phentsize;
+  UINT16    e_phnum;
+  UINT16    e_shentsize;
+  UINT16    e_shnum;
+  UINT16    e_shstrndx;
+} ELF_SECTION_64;
+
+#pragma pack (pop)
+
+HRESULT CALLBACK
+elf (
+  PDEBUG_CLIENT4  Client,
+  PCSTR           args
+  )
+{
+  ULONG64         Address;
+  ELF_HEADER_64   Header = { 0 };
+  ELF_SECTION_64  *Section;
+  ULONG           BytesRead = 0;
+
+  INIT_API ();
+
+  if (strlen (args) == 0) {
+    dprintf ("Usage: !uefiext.elf [Address]\n");
+    return ERROR_INVALID_PARAMETER;
+  }
+
+  Address = GetExpression (args);
+  if ((Address == 0) || (Address == (-1))) {
+    dprintf ("Invalid address!\n");
+    dprintf ("Usage: !uefiext.elf [Address]\n");
+    return ERROR_INVALID_PARAMETER;
+  }
+
+  ReadMemory (Address, &Header, sizeof (Header), &BytesRead);
+  if (BytesRead != sizeof (Header)) {
+    dprintf ("Failed to read header!\n");
+    return ERROR_BAD_ARGUMENTS;
+  }
+
+  if ((Header.e_ident[0] != 0x7F) || (Header.e_ident[1] != 'E') || (Header.e_ident[2] != 'L') || (Header.e_ident[3] != 'F')) {
+    dprintf ("Invalid ELF header! Magic did not match.\n");
+    return ERROR_INVALID_DATA;
+  }
+
+  dprintf ("ELF Header @ %llx\n", Address);
+  dprintf ("------------------------------------\n");
+  dprintf ("Type                     0x%x\n", Header.e_type);
+  dprintf ("Machine                  0x%x\n", Header.e_machine);
+  dprintf ("Version                  0x%x\n", Header.e_version);
+  dprintf ("Entry                    0x%llx\n", Header.e_entry);
+  dprintf ("Program Table Offset     0x%llx\n", Header.e_phoff);
+  dprintf ("Section Table Offset     0x%llx\n", Header.e_shoff);
+  dprintf ("Flags                    0x%x\n", Header.e_flags);
+  dprintf ("Header Size              0x%x\n", Header.e_ehsize);
+  dprintf ("Program Header Size      0x%x\n", Header.e_phentsize);
+  dprintf ("Program Header Num       0x%x\n", Header.e_phnum);
+  dprintf ("Section Header Size      0x%x\n", Header.e_shentsize);
+  dprintf ("Section Header Num       0x%x\n", Header.e_shnum);
+  dprintf ("Section Names Index      0x%x\n", Header.e_shstrndx);
+  dprintf ("------------------------------------\n\n");
+
+  // Print sections.
+  Section = (ELF_SECTION_64 *)(Address + Header.e_phoff);
 
   EXIT_API ();
   return S_OK;

@@ -44,7 +44,12 @@ modulebreak (
 
   INIT_API ();
 
-  sprintf_s (Command, sizeof (Command), ".exdicmd target:0:b%s", args);
+  if (RUST == gUefiEnv) {
+    sprintf_s (Command, sizeof (Command), ".exdicmd target:0:mod break %s", args);
+  } else {
+    sprintf_s (Command, sizeof (Command), ".exdicmd target:0:b%s", args);
+  }
+
   g_ExtControl->Execute (
                   DEBUG_OUTCTL_ALL_CLIENTS,
                   Command,
@@ -134,6 +139,23 @@ reboot (
                   "g",
                   DEBUG_EXECUTE_DEFAULT
                   );
+
+  EXIT_API ();
+  return S_OK;
+}
+
+HRESULT CALLBACK
+monitor (
+  PDEBUG_CLIENT4  Client,
+  PCSTR           args
+  )
+{
+  PSTR  Response;
+
+  INIT_API ();
+
+  Response = MonitorCommandWithOutput (Client, args);
+  dprintf ("%s\n", Response);
 
   EXIT_API ();
   return S_OK;

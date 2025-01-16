@@ -24,6 +24,7 @@ EXPORTS
     loadmodules
     memorymap
     modulebreak
+    monitor
     protocols
     readmsr
     readvar
