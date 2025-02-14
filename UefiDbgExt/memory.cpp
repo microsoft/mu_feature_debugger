@@ -314,15 +314,28 @@ advlog (
 
   // If no valid input address was give, find the symbol.
   if (GetExpressionEx (args, &InfoAddress, &args) == FALSE) {
-    InfoAddress = GetExpression ("mLoggerInfo");
-    if (InfoAddress == NULL) {
-      dprintf ("Failed to find mLoggerInfo!\n");
-      Result = ERROR_NOT_FOUND;
+    if (gUefiEnv == DXE) {
+      InfoAddress = GetExpression ("mLoggerInfo");
+      if (InfoAddress == NULL) {
+        dprintf ("Failed to find mLoggerInfo!\n");
+        Result = ERROR_NOT_FOUND;
+        goto Exit;
+      }
+    } else if (gUefiEnv == RUST) {
+      InfoAddress = GetExpression ("adv_logger::logger::DBG_ADV_LOG_BUFFER");
+      if (InfoAddress == NULL) {
+        dprintf ("Failed to find adv_logger::logger::DBG_ADV_LOG_BUFFER!\n");
+        Result = ERROR_NOT_FOUND;
+        goto Exit;
+      }
+    } else {
+      dprintf ("Log discovery not supported in this environment! Please provide the buffer address.\n");
+      Result = ERROR_NOT_SUPPORTED;
       goto Exit;
     }
 
     if (!ReadPointer (InfoAddress, &InfoAddress)) {
-      dprintf ("Failed to read mLoggerInfo!\n");
+      dprintf ("Failed to read logger info!\n");
       Result = ERROR_NOT_FOUND;
       goto Exit;
     }
