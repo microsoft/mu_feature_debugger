@@ -14,6 +14,8 @@ Module Name:
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
+#include <vector>
 
 //
 // Define KDEXT_64BIT to make all wdbgexts APIs recognize 64 bit addresses
@@ -31,6 +33,25 @@ Module Name:
 extern "C" {
 #endif
 
+typedef enum _PRINTF_DML_COLOR {
+  Normal,
+  Verbose,
+  Warning,
+  Err,
+  Subdued,
+  Header,
+  Emphasized,
+  Changed,
+  ColorMax
+} PRINTF_DML_COLOR, *PPRINTF_DML_COLOR;
+
+VOID
+PrintDml (
+  __in PRINTF_DML_COLOR  Mask,
+  __in PCSTR             Format,
+  ...
+  );
+
 #define INIT_API()                             \
     HRESULT Status;                            \
     if ((Status = ExtQuery(Client)) != S_OK) return Status;
@@ -41,9 +62,11 @@ extern "C" {
 #define EXIT_API  ExtRelease
 
 // Global variables initialized by query.
-extern PDEBUG_CLIENT4   g_ExtClient;
-extern PDEBUG_CONTROL   g_ExtControl;
-extern PDEBUG_SYMBOLS2  g_ExtSymbols;
+extern PDEBUG_CLIENT4    g_ExtClient;
+extern PDEBUG_CONTROL    g_ExtControl;
+extern PDEBUG_SYMBOLS2   g_ExtSymbols;
+extern PDEBUG_REGISTERS  g_ExtRegisters;
+extern ULONG             g_TargetMachine;
 
 extern BOOL   Connected;
 extern ULONG  TargetMachine;

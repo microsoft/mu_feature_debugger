@@ -17,6 +17,7 @@ Abstract:
 #include "uefiext.h"
 
 UEFI_ENV  gUefiEnv = DXE;
+ULONG     g_TargetMachine;
 
 HRESULT
 NotifyOnTargetAccessible (
@@ -28,6 +29,85 @@ NotifyOnTargetAccessible (
   //
 
   return S_OK;
+}
+
+const struct _DML_COLOR_MAP {
+  CHAR     *Bg;
+  CHAR     *Fg;
+  ULONG    Mask;
+} DmlColorMap[ColorMax] = {
+  { "normbg", "normfg",  DEBUG_OUTPUT_NORMAL  }, // Normal
+  { "verbbg", "verbfg",  DEBUG_OUTPUT_VERBOSE }, // Verbose
+  { "warnbg", "warnfg",  DEBUG_OUTPUT_WARNING }, // Warning
+  { "errbg",  "errfg",   DEBUG_OUTPUT_ERROR   }, // Error
+  { "subbg",  "subfg",   DEBUG_OUTPUT_NORMAL  }, // Subdued
+  { "normbg", "srccmnt", DEBUG_OUTPUT_NORMAL  }, // Header
+  { "empbg",  "emphfg",  DEBUG_OUTPUT_NORMAL  }, // Emphasized
+  { "normbg", "changed", DEBUG_OUTPUT_NORMAL  }, // Changed
+};
+
+VOID
+PrintDml (
+  __in PRINTF_DML_COLOR  Color,
+  __in PCSTR             Format,
+  ...
+  )
+
+/*++
+
+Routine Description:
+
+    This routine prints a string with DML markup to the debugger, optionally
+    encoding the string with the given color information.
+
+Arguments:
+
+    Color - A color of type PRINTF_DML_COLOR. Certain colors, such as Verbose,
+            Warning, and Error are given special handling by the debugger.
+
+    Format - Format string.
+
+    ... - Additional arguments to support the format string.
+
+Return Value:
+
+    None.
+
+--*/
+{
+  va_list  Args;
+  ULONG    Mask;
+
+  va_start (Args, Format);
+  Mask = DEBUG_OUTPUT_NORMAL;
+
+  if ((Color > Normal) && (Color < ColorMax)) {
+    Mask = DmlColorMap[Color].Mask;
+    g_ExtControl->ControlledOutput (
+                    DEBUG_OUTCTL_AMBIENT_DML,
+                    Mask,
+                    "<col fg=\"%s\" bg=\"%s\">",
+                    DmlColorMap[Color].Fg,
+                    DmlColorMap[Color].Bg
+                    );
+  }
+
+  g_ExtControl->ControlledOutputVaList (
+                  DEBUG_OUTCTL_AMBIENT_DML,
+                  Mask,
+                  Format,
+                  Args
+                  );
+
+  if ((Color > Normal) && (Color < ColorMax)) {
+    g_ExtControl->ControlledOutput (
+                    DEBUG_OUTCTL_AMBIENT_DML,
+                    Mask,
+                    "</col>"
+                    );
+  }
+
+  va_end (Args);
 }
 
 HRESULT CALLBACK
@@ -79,6 +159,7 @@ help (
     "  memorymap           - Prints the current memory map\n"
     "  hobs                - Enumerates the hand off blocks\n"
     "  protocols           - Lists the protocols from the protocol list.\n"
+    "  pt                  - Dumps the page tables for a given address\n"
     "  handles             - Prints the handles list.\n"
     "  linkedlist          - Parses a UEFI style linked list of entries.\n"
     "  efierror            - Translates an EFI error code.\n"
@@ -98,7 +179,7 @@ help (
 }
 
 HRESULT CALLBACK
-init (
+uefiext_init (
   PDEBUG_CLIENT4  Client,
   PCSTR           args
   )
@@ -119,6 +200,14 @@ init (
     // output.
     Client->GetOutputMask (&Mask);
     Client->SetOutputMask (Mask | DEBUG_OUTPUT_VERBOSE);
+
+    if ((Status = g_ExtControl->GetActualProcessorType (&g_TargetMachine)) != S_OK) {
+      return S_FALSE;
+    }
+
+    if ((Status = Client->QueryInterface (__uuidof (IDebugRegisters), (void **)&g_ExtRegisters)) != S_OK) {
+      return S_FALSE;
+    }
 
     // Detect if this is a UEFI software debugger.
     Output = ExecuteCommandWithOutput (Client, ".exdicmd target:0:?");
@@ -160,29 +249,29 @@ CHAR  mOutput[1024];
 class OutputCallbacks : public IDebugOutputCallbacks {
 public:
 
-STDMETHOD (QueryInterface)(THIS_ REFIID InterfaceId, PVOID *Interface) {
-  if (InterfaceId == __uuidof (IDebugOutputCallbacks)) {
-    *Interface = (IDebugOutputCallbacks *)this;
-    AddRef ();
-    return S_OK;
-  } else {
-    *Interface = NULL;
-    return E_NOINTERFACE;
+  STDMETHOD (QueryInterface)(THIS_ REFIID InterfaceId, PVOID *Interface) {
+    if (InterfaceId == __uuidof (IDebugOutputCallbacks)) {
+      *Interface = (IDebugOutputCallbacks *)this;
+      AddRef ();
+      return S_OK;
+    } else {
+      *Interface = NULL;
+      return E_NOINTERFACE;
+    }
   }
-}
 
-STDMETHOD_ (ULONG, AddRef)(THIS) {
-  return 1;
-}
+  STDMETHOD_ (ULONG, AddRef)(THIS) {
+    return 1;
+  }
 
-STDMETHOD_ (ULONG, Release)(THIS) {
-  return 1;
-}
+  STDMETHOD_ (ULONG, Release)(THIS) {
+    return 1;
+  }
 
-STDMETHOD (Output)(THIS_ ULONG Mask, PCSTR Text) {
-  strcpy_s (mOutput, sizeof (mOutput), Text);
-  return S_OK;
-}
+  STDMETHOD (Output)(THIS_ ULONG Mask, PCSTR Text) {
+    strcpy_s (mOutput, sizeof (mOutput), Text);
+    return S_OK;
+  }
 };
 
 OutputCallbacks  mOutputCallback;

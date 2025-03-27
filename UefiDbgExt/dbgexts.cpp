@@ -18,9 +18,10 @@ Abstract:
 #include "dbgexts.h"
 #include <strsafe.h>
 
-PDEBUG_CLIENT4   g_ExtClient;
-PDEBUG_CONTROL   g_ExtControl;
-PDEBUG_SYMBOLS2  g_ExtSymbols;
+PDEBUG_CLIENT4    g_ExtClient;
+PDEBUG_CONTROL    g_ExtControl;
+PDEBUG_SYMBOLS2   g_ExtSymbols;
+PDEBUG_REGISTERS  g_ExtRegisters;
 
 WINDBG_EXTENSION_APIS  ExtensionApis;
 

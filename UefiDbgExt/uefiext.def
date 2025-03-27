@@ -19,12 +19,13 @@ EXPORTS
     help
     hobs
     info
-    init
+    init=uefiext_init
     linkedlist
     loadmodules
     memorymap
     modulebreak
     monitor
+    pt
     protocols
     readmsr
     readvar
