@@ -94,3 +94,24 @@ MonitorCommandWithOutput (
   PDEBUG_CLIENT4  Client,
   PCSTR           MonitorCommand
   );
+
+std::string
+Format (
+  const char  *fmt,
+  ...
+  );
+
+std::string
+FormatAddress (
+  __in ULONGLONG  Address
+  );
+
+ULONG64
+GetRegisterValue (
+  __in PCSTR  Name
+  );
+
+#define VerbOut(...) \
+g_ExtControl->ControlledOutput(DEBUG_OUTCTL_ALL_CLIENTS,\
+                                DEBUG_OUTPUT_VERBOSE,\
+                                __VA_ARGS__)

@@ -273,6 +273,7 @@
     <ClCompile Include="uefiext.cpp" />
     <ClCompile Include="memory.cpp" />
     <ClCompile Include="modules.cpp" />
+    <ClCompile Include="pt.cpp" />
     <ClCompile Include="tables.cpp" />
     <ClCompile Include="swdebug.cpp" />
     <ClCompile Include="handles.cpp" />
