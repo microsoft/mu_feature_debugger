@@ -159,11 +159,15 @@ monitor (
   INIT_API ();
 
   Offset = 0;
+
+  // Loop on the command until the entire response is received.
   while (TRUE) {
     Response = MonitorCommandWithOutput (Client, args, Offset);
 
+    // Strip of the trailing newline character if it exists since this in injected
+    // by windbg and is not part of the response.
     Len = strlen (Response);
-    if (Response[Len - 1] == '\n') {
+    if ((Len > 0) && (Response[Len - 1] == '\n')) {
       Len--;
     }
 
