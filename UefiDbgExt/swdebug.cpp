@@ -150,11 +150,40 @@ monitor (
   PCSTR           args
   )
 {
-  PSTR  Response;
+  PSTR         Response;
+  ULONG        Len;
+  const CHAR   *TruncateTag   = "#T#";
+  const ULONG  TruncateTagLen = sizeof ("#T#") - 1; // Exclude the null terminator.
+  ULONG        Offset;
 
   INIT_API ();
 
-  Response = MonitorCommandWithOutput (Client, args);
+  Offset = 0;
+
+  // Loop on the command until the entire response is received.
+  while (TRUE) {
+    Response = MonitorCommandWithOutput (Client, args, Offset);
+
+    // Strip of the trailing newline character if it exists since this in injected
+    // by windbg and is not part of the response.
+    Len = strlen (Response);
+    if ((Len > 0) && (Response[Len - 1] == '\n')) {
+      Len--;
+    }
+
+    if (Len > TruncateTagLen) {
+      if (strncmp (Response + Len - TruncateTagLen, TruncateTag, TruncateTagLen) == 0) {
+        // The response was truncated, so we need to read more.
+        Response[Len - sizeof (TruncateTag)] = 0; // Remove the truncate tag.
+        dprintf ("%s", Response);
+        Offset += Len - TruncateTagLen;
+        continue;
+      }
+    }
+
+    break;
+  }
+
   dprintf ("%s\n", Response);
 
   EXIT_API ();

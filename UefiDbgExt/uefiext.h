@@ -92,7 +92,8 @@ ExecuteCommandWithOutput (
 PSTR
 MonitorCommandWithOutput (
   PDEBUG_CLIENT4  Client,
-  PCSTR           MonitorCommand
+  PCSTR           MonitorCommand,
+  ULONG           Offset
   );
 
 std::string
