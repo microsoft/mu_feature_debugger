@@ -244,7 +244,8 @@ uefiext_init (
 }
 
 // Used to capture output from debugger commands
-CHAR  mOutput[1024];
+CHAR  mOutput[0x2000];
+ULONG mOutputOffset = 0;
 
 class OutputCallbacks : public IDebugOutputCallbacks {
 public:
@@ -269,7 +270,9 @@ public:
   }
 
   STDMETHOD (Output)(THIS_ ULONG Mask, PCSTR Text) {
-    strcpy_s (mOutput, sizeof (mOutput), Text);
+    strcpy_s (mOutput + mOutputOffset, sizeof (mOutput) - mOutputOffset, Text);
+    mOutputOffset += strlen (Text);
+    mOutputOffset = min (mOutputOffset, sizeof (mOutput)); // Ensure we don't overflow the buffer.
     return S_OK;
   }
 };
@@ -284,6 +287,7 @@ ExecuteCommandWithOutput (
 {
   PDEBUG_OUTPUT_CALLBACKS  Callbacks;
 
+  mOutputOffset = 0;
   ZeroMemory (mOutput, sizeof (mOutput));
 
   Client->GetOutputCallbacks (&Callbacks);
@@ -300,7 +304,8 @@ ExecuteCommandWithOutput (
 PSTR
 MonitorCommandWithOutput (
   PDEBUG_CLIENT4  Client,
-  PCSTR           MonitorCommand
+  PCSTR           MonitorCommand,
+  ULONG           Offset
   )
 {
   CHAR   Command[512];
@@ -309,7 +314,11 @@ MonitorCommandWithOutput (
   PCSTR  Preamble = "Target command response: ";
   PCSTR  Ending   = "exdiCmd:";
 
-  sprintf_s (Command, sizeof (Command), ".exdicmd target:0:%s", MonitorCommand);
+  if (Offset == 0 ) {
+    sprintf_s (Command, sizeof (Command), ".exdicmd target:0:%s", MonitorCommand);
+  } else {
+    sprintf_s (Command, sizeof (Command), ".exdicmd target:0:O[%d] %s", Offset, MonitorCommand);
+  }
 
   Client->GetOutputMask (&Mask);
   Client->SetOutputMask (Mask | DEBUG_OUTPUT_VERBOSE);

@@ -150,11 +150,36 @@ monitor (
   PCSTR           args
   )
 {
-  PSTR  Response;
+  PSTR         Response;
+  ULONG        Len;
+  const CHAR   *TruncateTag   = "#T#";
+  const ULONG  TruncateTagLen = sizeof ("#T#") - 1; // Exclude the null terminator.
+  ULONG        Offset;
 
   INIT_API ();
 
-  Response = MonitorCommandWithOutput (Client, args);
+  Offset = 0;
+  while (TRUE) {
+    Response = MonitorCommandWithOutput (Client, args, Offset);
+
+    Len = strlen (Response);
+    if (Response[Len - 1] == '\n') {
+      Len--;
+    }
+
+    if (Len > TruncateTagLen) {
+      if (strncmp (Response + Len - TruncateTagLen, TruncateTag, TruncateTagLen) == 0) {
+        // The response was truncated, so we need to read more.
+        Response[Len - sizeof (TruncateTag)] = 0; // Remove the truncate tag.
+        dprintf ("%s", Response);
+        Offset += Len - TruncateTagLen;
+        continue;
+      }
+    }
+
+    break;
+  }
+
   dprintf ("%s\n", Response);
 
   EXIT_API ();
