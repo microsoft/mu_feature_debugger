@@ -17,6 +17,8 @@ Module Name:
 #include <string>
 #include <vector>
 
+#include "uefispec.h"
+
 //
 // Define KDEXT_64BIT to make all wdbgexts APIs recognize 64 bit addresses
 // It is recommended for extensions to use 64 bit headers from wdbgexts so

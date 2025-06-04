@@ -153,7 +153,6 @@ help (
     "\nModule Discovery:\n"
     "  findall             - Attempts to detect environment and load all modules\n"
     "  findmodule          - Find the currently running module\n"
-    "  loadmodules         - Find and loads symbols for all modules in the debug list\n"
     "  elf                 - Dumps the headers of an ELF image\n"
     "\nData Parsing:\n"
     "  memorymap           - Prints the current memory map\n"
@@ -223,7 +222,7 @@ uefiext_init (
     }
 
     dprintf ("Scanning for images.\n");
-    if (gUefiEnv == DXE) {
+    if (gUefiEnv == DXE || gUefiEnv == RUST) {
       g_ExtControl->Execute (
                       DEBUG_OUTCTL_ALL_CLIENTS,
                       "!uefiext.findall",
@@ -271,7 +270,7 @@ public:
 
   STDMETHOD (Output)(THIS_ ULONG Mask, PCSTR Text) {
     strcpy_s (mOutput + mOutputOffset, sizeof (mOutput) - mOutputOffset, Text);
-    mOutputOffset += strlen (Text);
+    mOutputOffset += (ULONG)strlen (Text);
     mOutputOffset = min (mOutputOffset, sizeof (mOutput)); // Ensure we don't overflow the buffer.
     return S_OK;
   }
