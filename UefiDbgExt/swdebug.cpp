@@ -166,7 +166,7 @@ monitor (
 
     // Strip of the trailing newline character if it exists since this in injected
     // by windbg and is not part of the response.
-    Len = strlen (Response);
+    Len = (ULONG)strlen (Response);
     if ((Len > 0) && (Response[Len - 1] == '\n')) {
       Len--;
     }

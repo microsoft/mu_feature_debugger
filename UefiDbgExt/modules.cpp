@@ -81,77 +81,108 @@ FindModuleBackwards (
   return Result;
 }
 
-HRESULT CALLBACK
+HRESULT
 loadmodules (
-  PDEBUG_CLIENT4  Client,
-  PCSTR           args
+  ULONG64  SystemTableAddr
   )
 {
-  ULONG64  HeaderAddress;
-  UINT32   TableSize;
-  ULONG64  Table;
-  ULONG64  Entry;
-  ULONG64  NormalImage;
-  ULONG64  ImageProtocol;
-  UINT64   ImageBase;
-  ULONG    Index;
-  CHAR     Command[512];
-  ULONG64  Base;
-
-  INIT_API ();
-
-  UNREFERENCED_PARAMETER (args);
+  UINT32                       TableSize;
+  ULONG64                      Table;
+  EFI_DEBUG_IMAGE_INFO         *Entry;
+  EFI_DEBUG_IMAGE_INFO_NORMAL  *NormalImage;
+  EFI_LOADED_IMAGE_PROTOCOL    *ImageProtocol;
+  UINT64                       ImageBase;
+  ULONG                        Index;
+  CHAR                         Command[512];
+  ULONG64                      Base;
+  ULONG                        BytesRead = 0;
 
   //
   // TODO: Add support for PEI & MM
   //
 
-  if (gUefiEnv != DXE) {
-    dprintf ("Only supported for DXE!\n");
-    return ERROR_NOT_SUPPORTED;
-  }
+  EFI_SYSTEM_TABLE                   SystemTable;
+  EFI_CONFIGURATION_TABLE            *ConfigTable;
+  GUID                               DebugImageInfoTableGuid    = EFI_DEBUG_IMAGE_INFO_TABLE_GUID;
+  EFI_DEBUG_IMAGE_INFO_TABLE_HEADER  *DebugImageInfoTableHeader = NULL;
 
-  HeaderAddress = GetExpression ("&mDebugInfoTableHeader");
-  if (HeaderAddress == NULL) {
-    dprintf ("Failed to find mDebugInfoTableHeader!\n");
+  // Read the EFI_SYSTEM_TABLE structure from the provided address
+  if (!ReadMemory (SystemTableAddr, &SystemTable, sizeof (SystemTable), &BytesRead) || (BytesRead != sizeof (SystemTable))) {
+    dprintf ("Failed to read EFI_SYSTEM_TABLE at %llx\n", SystemTableAddr);
     return ERROR_NOT_FOUND;
   }
 
-  GetFieldValue (HeaderAddress, "EFI_DEBUG_IMAGE_INFO_TABLE_HEADER", "TableSize", TableSize);
-  GetFieldValue (HeaderAddress, "EFI_DEBUG_IMAGE_INFO_TABLE_HEADER", "EfiDebugImageInfoTable", Table);
+  // Iterate through the configuration tables to find the debug image info table
+  ConfigTable = SystemTable.ConfigurationTable;
+  for (UINT64 i = 0; i < SystemTable.NumberOfTableEntries; i++) {
+    EFI_CONFIGURATION_TABLE  CurrentTable;
+    if (!ReadMemory ((ULONG64)&ConfigTable[i], &CurrentTable, sizeof (CurrentTable), &BytesRead) || (BytesRead != sizeof (CurrentTable))) {
+      dprintf ("Failed to read configuration table entry at index %llu\n", i);
+      continue;
+    }
+
+    if (memcmp (&CurrentTable.VendorGuid, &DebugImageInfoTableGuid, sizeof (GUID)) == 0) {
+      DebugImageInfoTableHeader = (EFI_DEBUG_IMAGE_INFO_TABLE_HEADER *)CurrentTable.VendorTable;
+      break;
+    }
+  }
+
+  if (DebugImageInfoTableHeader == NULL) {
+    dprintf ("Failed to locate EFI_DEBUG_IMAGE_INFO_TABLE_HEADER in configuration tables\n");
+    return ERROR_NOT_FOUND;
+  }
+
+  // Read the debug image info table header
+  if (!ReadMemory ((ULONG64)&DebugImageInfoTableHeader->TableSize, &TableSize, sizeof (TableSize), &BytesRead) || (BytesRead != sizeof (TableSize))) {
+    dprintf ("Failed to read EFI_DEBUG_IMAGE_INFO_TABLE_HEADER at %llx\n", (ULONG64)DebugImageInfoTableHeader);
+    return ERROR_NOT_FOUND;
+  }
+
+  if (!ReadMemory ((ULONG64)&DebugImageInfoTableHeader->EfiDebugImageInfoTable, &Table, sizeof (Table), &BytesRead) || (BytesRead != sizeof (Table))) {
+    dprintf ("Failed to read EfiDebugImageInfoTable pointer\n");
+    return ERROR_NOT_FOUND;
+  }
+
   if ((Table == NULL) || (TableSize == 0)) {
-    dprintf ("Debug table is empty!\n");
+    dprintf ("Debug image info table is empty!\n");
     return ERROR_NOT_FOUND;
   }
 
-  if (TableSize <= 1) {
-    dprintf ("Debug info array is empty.\n");
-  }
+  // Iterate through the debug image info table entries
+  for (Index = 0; Index < TableSize; Index++) {
+    Entry = (EFI_DEBUG_IMAGE_INFO *)(Table + (Index * sizeof (EFI_DEBUG_IMAGE_INFO)));
+    if (!ReadMemory ((ULONG64)&Entry->NormalImage, &NormalImage, sizeof (NormalImage), &BytesRead) || (BytesRead != sizeof (NormalImage))) {
+      dprintf ("Failed to read debug image info entry at index %lu\n", Index);
+      continue;
+    }
 
-  // Skip the 0-index to avoid reloading DxeCore. There is probably a better way to do this.
-  for (Index = 1; Index < TableSize; Index++) {
-    Entry = Table + (Index * GetTypeSize ("EFI_DEBUG_IMAGE_INFO"));
-    GetFieldValue (Entry, "EFI_DEBUG_IMAGE_INFO", "NormalImage", NormalImage);
     if (NormalImage == NULL) {
-      dprintf ("Skipping missing normal info!\n");
+      dprintf ("Skipping missing normal image info at index %lu\n", Index);
       continue;
     }
 
-    GetFieldValue (NormalImage, "EFI_DEBUG_IMAGE_INFO_NORMAL", "LoadedImageProtocolInstance", ImageProtocol);
+    if (!ReadMemory ((ULONG64)&NormalImage->LoadedImageProtocolInstance, &ImageProtocol, sizeof (ImageProtocol), &BytesRead) || (BytesRead != sizeof (ImageProtocol))) {
+      dprintf ("Failed to read loaded image protocol instance at index %lu\n", Index);
+      continue;
+    }
+
     if (ImageProtocol == NULL) {
-      dprintf ("Skipping missing loaded image protocol!\n");
+      dprintf ("Skipping missing loaded image protocol at index %lu\n", Index);
       continue;
     }
 
-    GetFieldValue (ImageProtocol, "EFI_LOADED_IMAGE_PROTOCOL", "ImageBase", ImageBase);
-
-    // Check this hasn't already be loaded.
-    if ((g_ExtSymbols->GetModuleByOffset (ImageBase, 0, NULL, &Base) == S_OK) &&
-        (ImageBase == Base))
-    {
+    if (!ReadMemory ((ULONG64)&ImageProtocol->ImageBase, &ImageBase, sizeof (ImageBase), &BytesRead) || (BytesRead != sizeof (ImageBase))) {
+      dprintf ("Failed to read image base at index %lu\n", Index);
       continue;
     }
 
+    // Check if the module is already loaded
+    if ((g_ExtSymbols->GetModuleByOffset (ImageBase, 0, NULL, &Base) == S_OK) && (ImageBase == Base)) {
+      dprintf ("Module at %llx is already loaded\n", ImageBase);
+      continue;
+    }
+
+    dprintf ("Loading module at %llx\n", ImageBase);
     sprintf_s (Command, sizeof (Command), ".imgscan /l /r %I64x (%I64x + 0xFFF)", ImageBase, ImageBase);
     g_ExtControl->Execute (
                     DEBUG_OUTCTL_ALL_CLIENTS,
@@ -160,7 +191,6 @@ loadmodules (
                     );
   }
 
-  EXIT_API ();
   return S_OK;
 }
 
@@ -199,56 +229,121 @@ findall (
   )
 {
   HRESULT  Result;
-  ULONG64  BsPtrAddr;
-  ULONG64  BsTableAddr;
+  ULONG64  SystemPtrAddr;
+  ULONG64  SystemTableAddr;
+  ULONG64  Signature            = 0;
+  ULONG    BytesRead            = 0;
+  ULONG64  SystemTableSignature = (('I') | (static_cast<ULONG64>('B') << 8) | (static_cast<ULONG64>('I') << 16) | (static_cast<ULONG64>(' ') << 24) | (static_cast<ULONG64>('S') << 32) | (static_cast<ULONG64>('Y') << 40) | (static_cast<ULONG64>('S') << 48) | (static_cast<ULONG64>('T') << 56));
+  PSTR     Response;
 
   INIT_API ();
 
-  if (gUefiEnv != DXE) {
-    dprintf ("Only supported for DXE!\n");
+  if ((gUefiEnv != DXE) && (gUefiEnv != RUST)) {
+    dprintf ("Only supported for DXE and Rust!\n");
     return ERROR_NOT_SUPPORTED;
   }
 
   //
-  // First find the current module
+  // First find the current module. We only do this to see if we are in the core to find the system table pointer
+  // symbols. If we are not in the core, we will ask the monitor for the system table pointer address, failing that
+  // we will scan memory for the EFI_SYSTEM_TABLE_SIGNATURE, per UEFI spec. The C DXE environment does not have the
+  // monitor command, so relies on the core symbols having been loaded at the initial breakpoint (or us being broken
+  // into the core now)
   //
 
-  Result = FindModuleBackwards (GetExpression ("@$ip"));
-  if (Result != S_OK) {
-    return Result;
-  }
-
-  //
-  // Find the core module. This might be the same as the executing one.
-  //
-
-  BsPtrAddr = GetExpression ("gBS");
-  if (BsPtrAddr == NULL) {
-    dprintf ("Failed to find boot services table pointer!\n");
-    return ERROR_NOT_FOUND;
-  }
-
-  if (!ReadPointer (BsPtrAddr, &BsTableAddr)) {
-    dprintf ("Failed to find boot services table!\n");
-    return ERROR_NOT_FOUND;
-  }
-
-  Result = FindModuleBackwards (BsTableAddr);
-  if (Result != S_OK) {
-    return Result;
-  }
+  FindModuleBackwards (GetExpression ("@$ip"));
 
   g_ExtControl->Execute (
                   DEBUG_OUTCTL_ALL_CLIENTS,
-                  "ld *Core",
+                  "ld *ore*",
                   DEBUG_EXECUTE_DEFAULT
                   );
+
+  //
+  // Find the system table pointer, which we may not find if we are not in the core module
+  //
+
+  if (gUefiEnv == DXE) {
+    SystemPtrAddr = GetExpression ("mDebugTable");
+    if (!ReadPointer (SystemPtrAddr, &SystemPtrAddr)) {
+      dprintf ("Failed to read memory at %llx to get system table from ptr\n", SystemPtrAddr);
+      return ERROR_NOT_FOUND;
+    }
+  } else if (gUefiEnv == RUST) {
+    Response      = MonitorCommandWithOutput (Client, "system_table_ptr", 0);
+    SystemPtrAddr = strtoull (Response, NULL, 16);
+
+    if (SystemPtrAddr == 0) {
+      // if we didn't get the monitor command response, we will try to read the system table pointer from the core
+      // which may work, if we already have loaded the core symbols. If not, we will fail gracefully. This would be the
+      // case for the QEMU debugger, where we don't have the monitor command available, but we do have the
+      // system table pointer symbols loaded.
+      SystemPtrAddr = GetExpression ("patina_dxe_core::config_tables::debug_image_info_table::DBG_SYSTEM_TABLE_POINTER_ADDRESS");
+      if (!ReadPointer (SystemPtrAddr, &SystemPtrAddr)) {
+        dprintf ("Failed to read memory at %llx to get system table from ptr\n", SystemPtrAddr);
+        return ERROR_NOT_FOUND;
+      }
+    }
+  }
+
+  if (SystemPtrAddr == NULL) {
+    // TODO: Add a flag to indicate whether we should scan memory for the system table pointer and then make the
+    // scanning better, maybe binary search (though has issues). For now, C DXE has parity with before, Rust has
+    // two cases, we don't have the monitor command yet, but that is only true at the initial breakpoint (gets set up
+    // very soon after that, before other modules are loaded, so we have already succeeded) or we are in an older Rust
+    // core that doesn't support the monitor command
+    return ERROR_NOT_FOUND;
+
+    /*
+    // Locate the system table pointer, which is allocated on a 4MB boundary near the top of memory
+    // with signature EFI_SYSTEM_TABLE_SIGNATURE       SIGNATURE_64 ('I','B','I',' ','S','Y','S','T')
+    // and the EFI_SYSTEM_TABLE structure.
+    SystemPtrAddr = 0x80000000; // Start at the top of memory, well, as far as we want to go. This is pretty lazy, but it takes a long time to search the entire memory space.
+    while (SystemPtrAddr >= 0x400000) { // Stop at 4MB boundary
+      if (!ReadPointer(SystemPtrAddr, &Signature)) {
+        SystemPtrAddr -= 0x400000; // Move to the next 4MB boundary
+        continue;
+      }
+
+      if (Signature == SystemTableSignature) {
+        dprintf("Found EFI_SYSTEM_TABLE_SIGNATURE at %llx\n", SystemPtrAddr);
+        break;
+      }
+
+      SystemPtrAddr -= 0x400000; // Move to the next 4MB boundary
+    }
+
+    if (SystemPtrAddr < 0x400000) {
+      dprintf("Failed to locate EFI_SYSTEM_TABLE_SIGNATURE!\n");
+      return ERROR_NOT_FOUND;
+    }
+    */
+  } else {
+    // Check the signature at the system table pointer address
+    if (!ReadPointer (SystemPtrAddr, &Signature)) {
+      dprintf ("Failed to read memory at %llx to get system table signature\n", SystemPtrAddr);
+      return ERROR_NOT_FOUND;
+    }
+
+    if (Signature != SystemTableSignature) {
+      dprintf ("Couldn't find EFI_SYSTEM_TABLE_SIGNATURE %llx at %llx, found %llx instead\n", SystemTableSignature, SystemPtrAddr, Signature);
+      return ERROR_NOT_FOUND;
+    }
+  }
+
+  // move past the signature to get the EFI_SYSTEM_TABLE structure
+  SystemPtrAddr += sizeof (UINT64);
+
+  if (!ReadPointer (SystemPtrAddr, &SystemTableAddr)) {
+    dprintf ("Failed to find the system table!\n");
+    return ERROR_NOT_FOUND;
+  }
 
   //
   // Load all the other modules.
   //
 
-  Result = loadmodules (Client, "");
+  Result = loadmodules (SystemTableAddr);
 
   EXIT_API ();
   return S_OK;

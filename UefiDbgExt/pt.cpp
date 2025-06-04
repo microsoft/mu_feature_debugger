@@ -207,7 +207,7 @@ DisplayPte (
     IsPageWritable (Pte) ? 'W' : 'R',
     '_',
     '_',
-    '_',
+    Pte->Accessed ? 'A' : '_',
     Pte->UserNoExecute ? 'X' : 'E', // In the EL2 translation scheme UXN is the XN bit and is the only execute permission bit
     Pte->Valid ? 'V' : '-'
     );

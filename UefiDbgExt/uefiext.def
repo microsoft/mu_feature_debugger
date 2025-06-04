@@ -21,7 +21,6 @@ EXPORTS
     info
     init=uefiext_init
     linkedlist
-    loadmodules
     memorymap
     modulebreak
     monitor
