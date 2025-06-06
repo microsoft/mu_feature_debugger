@@ -580,9 +580,14 @@ ProcessMonitorCmd (
       break;
   }
 
-  // RCmd commands return hex encoded responses, convert to HEX before sending.
-  ConvertResponseToHex (&mScratch[0], mResponse, MAX_RESPONSE_SIZE);
+  // Respond with a intermediate packet, "O[HEX]" follow by an empty "OK" packet
+  // where the [HEX] is the hex encoding of the response string. The spec is
+  // vague on the need for this, but this is to be consistent with other GDB stub
+  // implementations and Windbg expectations.
+  mResponse[0] = 'O';
+  ConvertResponseToHex (&mScratch[0], &mResponse[1], MAX_RESPONSE_SIZE - 1);
   SendGdbResponse (mResponse);
+  SendGdbResponse ("OK");
 }
 
 /**
