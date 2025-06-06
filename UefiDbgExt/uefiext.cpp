@@ -15,6 +15,7 @@ Abstract:
 --*/
 
 #include "uefiext.h"
+#include <vector>
 
 UEFI_ENV  gUefiEnv = DXE;
 ULONG     g_TargetMachine;
@@ -244,8 +245,7 @@ uefiext_init (
 }
 
 // Used to capture output from debugger commands
-CHAR  mOutput[0x2000];
-ULONG mOutputOffset = 0;
+std::vector<std::string>  mResponses = { };
 
 class OutputCallbacks : public IDebugOutputCallbacks {
 public:
@@ -270,9 +270,7 @@ public:
   }
 
   STDMETHOD (Output)(THIS_ ULONG Mask, PCSTR Text) {
-    strcpy_s (mOutput + mOutputOffset, sizeof (mOutput) - mOutputOffset, Text);
-    mOutputOffset += strlen (Text);
-    mOutputOffset = min (mOutputOffset, sizeof (mOutput)); // Ensure we don't overflow the buffer.
+    mResponses.push_back (std::string(Text));
     return S_OK;
   }
 };
@@ -286,9 +284,17 @@ ExecuteCommandWithOutput (
   )
 {
   PDEBUG_OUTPUT_CALLBACKS  Callbacks;
+  static CHAR *Output = NULL;
+  SIZE_T Offset;
+  SIZE_T Length;
 
-  mOutputOffset = 0;
-  ZeroMemory (mOutput, sizeof (mOutput));
+  // To avoid complexity of tracking a shifting buffer, easier to just lazily free here.
+  if (Output != NULL) {
+    free (Output);
+    Output = NULL;
+  }
+
+  mResponses.clear ();
 
   Client->GetOutputCallbacks (&Callbacks);
   Client->SetOutputCallbacks (&mOutputCallback);
@@ -298,7 +304,21 @@ ExecuteCommandWithOutput (
                   DEBUG_EXECUTE_DEFAULT
                   );
   Client->SetOutputCallbacks (Callbacks);
-  return mOutput;
+
+  Length = 0;
+  for (const auto &str : mResponses) {
+    Length += str.length ();
+  }
+
+  Output = (CHAR *)malloc (Length + 1);
+  Offset = 0;
+  for (const auto &str : mResponses) {
+    memcpy (Output + Offset, str.c_str (), str.length ());
+    Offset += str.length ();
+  }
+
+  Output[Offset] = '\0';
+  return Output;
 }
 
 PSTR
@@ -313,6 +333,7 @@ MonitorCommandWithOutput (
   ULONG  Mask;
   PCSTR  Preamble = "Target command response: ";
   PCSTR  Ending   = "exdiCmd:";
+  PCSTR  Ok       = "OK\n";
 
   if (Offset == 0 ) {
     sprintf_s (Command, sizeof (Command), ".exdicmd target:0:%s", MonitorCommand);
@@ -332,6 +353,14 @@ MonitorCommandWithOutput (
 
   if (strstr (Output, Ending) != NULL) {
     *strstr (Output, Ending) = 0;
+  }
+
+  // If it has the OK string appended to the end, remove it
+  if (strlen(Output) > strlen (Ok)) {
+    size_t Offset = strlen (Output) - strlen (Ok);
+    if (strcmp (Output + Offset, Ok) == 0) {
+      strcpy_s(Output + Offset, strlen (Ok) + 1, "\n");
+    }
   }
 
   return Output;
