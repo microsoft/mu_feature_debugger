@@ -174,7 +174,7 @@ monitor (
     if (Len > TruncateTagLen) {
       if (strncmp (Response + Len - TruncateTagLen, TruncateTag, TruncateTagLen) == 0) {
         // The response was truncated, so we need to read more.
-        Response[Len - sizeof (TruncateTag)] = 0; // Remove the truncate tag.
+        Response[Len - TruncateTagLen] = 0; // Remove the truncate tag.
         dprintf ("%s", Response);
         Offset += Len - TruncateTagLen;
         continue;
