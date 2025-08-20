@@ -1,5 +1,7 @@
 #include "uefiext.h"
 
+#define FLAG_IGNORE_SELFMAP  0x1
+
 #define INVALID_PFN  (~0ULL)
 
 //
@@ -487,7 +489,8 @@ GetPleAddressX64 (
 VOID
 DumpPteX64 (
   __in ULONG64  Address,
-  __in ULONG64  UserRoot
+  __in ULONG64  UserRoot,
+  __in ULONG64  Flags
   )
 {
   ULONG             Levels;
@@ -520,15 +523,18 @@ DumpPteX64 (
     return;
   }
 
-  //
-  // Search backwards for self-mapped PTE.
-  //
-  for ( ; TestIndex >= 0; TestIndex--) {
-    ReadPte (PhysicalAddress + (TestIndex * 8), &Pte);
-    if ((Pte.PageFrameNumber << X64_PAGE_SHIFT) == PhysicalAddress) {
-      SelfMapIndex = TestIndex;
-      dprintf ("Self-mapped PTE found at index 0x%x, using self map\n", SelfMapIndex);
-      break;
+  if (Flags & FLAG_IGNORE_SELFMAP) {
+    dprintf ("Ignoring self map\n");
+  } else {
+    // Search backwards for self-mapped PTE.
+    //
+    for ( ; TestIndex >= 0; TestIndex--) {
+      ReadPte (PhysicalAddress + (TestIndex * 8), &Pte);
+      if ((Pte.PageFrameNumber << X64_PAGE_SHIFT) == PhysicalAddress) {
+        SelfMapIndex = TestIndex;
+        dprintf ("Self-mapped PTE found at index 0x%x, using self map\n", SelfMapIndex);
+        break;
+      }
     }
   }
 
@@ -819,7 +825,8 @@ GetPxeAddressARM64 (
 VOID
 DumpPteArm64 (
   __in ULONG64  Address,
-  __in ULONG64  UserRoot
+  __in ULONG64  UserRoot,
+  __in ULONG64  Flags
   )
 {
   ULONG               PxeOffset;
@@ -868,15 +875,19 @@ DumpPteArm64 (
   // the first PA of the page table is the root
   TableAddress = PhysicalAddress;
 
-  //
-  // Search backwards for self-mapped PTE.
-  //
-  for ( ; TestIndex >= 0; TestIndex--) {
-    ReadPte (PhysicalAddress + (TestIndex * 8), &Pte);
-    if ((Pte.PageFrameNumber << ARM64_PAGE_SHIFT) == PhysicalAddress) {
-      SelfMapIndex = TestIndex;
-      dprintf ("Self-mapped PTE found at index 0x%x, using self map\n", SelfMapIndex);
-      break;
+  if (Flags & FLAG_IGNORE_SELFMAP) {
+    dprintf ("Ignoring self map\n");
+  } else {
+    //
+    // Search backwards for self-mapped PTE.
+    //
+    for ( ; TestIndex >= 0; TestIndex--) {
+      ReadPte (PhysicalAddress + (TestIndex * 8), &Pte);
+      if ((Pte.PageFrameNumber << ARM64_PAGE_SHIFT) == PhysicalAddress) {
+        SelfMapIndex = TestIndex;
+        dprintf ("Self-mapped PTE found at index 0x%x, using self map\n", SelfMapIndex);
+        break;
+      }
     }
   }
 
@@ -1039,7 +1050,10 @@ PrintAddress:
 //
 
 const PSTR  PteHelp =
-  "!pt VA [PageTableRoot]\n";
+  "!pt [-i] VA [PageTableRoot]\n\n\
+    PageTableRoot is optional on X64 but required on ARM64.\n\
+    Run !monitor arch regs to get TTBR0_EL2 value.\n\
+    -i: Ignore the self map, this can be used to read an uninstalled page table.\n";
 
 HRESULT CALLBACK
 pt (
@@ -1049,6 +1063,7 @@ pt (
 {
   ULONG64  Address  = 0;
   ULONG64  UserRoot = 0;
+  ULONG64  Flags    = 0;
 
   INIT_API ();
 
@@ -1063,7 +1078,10 @@ pt (
         case '?':
           dprintf (PteHelp);
           goto Exit;
-
+        case 'i':
+          Flags |= FLAG_IGNORE_SELFMAP;
+          args++; // Advance past the option character
+          break;
         default:
           dprintf ("Unknown option '%c'\n", *args);
           dprintf (PteHelp);
@@ -1081,12 +1099,12 @@ pt (
   switch (g_TargetMachine) {
     case IMAGE_FILE_MACHINE_AMD64:
       Address = (ULONG64)(LONG64)Address;
-      DumpPteX64 (Address, UserRoot);
+      DumpPteX64 (Address, UserRoot, Flags);
       break;
 
     case IMAGE_FILE_MACHINE_ARM64:
       Address = (ULONG64)(LONG64)Address;
-      DumpPteArm64 (Address, UserRoot);
+      DumpPteArm64 (Address, UserRoot, Flags);
       break;
 
     default:
