@@ -159,31 +159,18 @@ but currently windbg will not be able to resolve GCC symbols.
 
 ### UEFI Extension
 
-This package contains an [Windbg Extension for Windbg](../UefiDbgExt/) that
-can be used to access UEFI structures and interact with the UEFI software debugger
-in a more intuitive way. See the the extensions [readme.md](../UefiDbgExt/readme.md)
-for more details. You can run this powershell command to install the latest version
-of the extension.
-
-```console
-wget -Uri https://github.com/microsoft/mu_feature_debugger/releases/latest/download/uefiext.dll -OutFile C:\Users\$Env:UserName\AppData\Local\DBG\EngineExtensions\UefiExt.dll
-```
-
-It is advised to configure `!uefiext.init` as a startup action in
-Settings->Debugging Settings->Startup. This will attempt to detect and automatically
-resolve initial symbols when connecting.
-
-![Windbgx Extension Startup](./Docs/Images/windbgx_startup.png)
+When debugging a UEFI target in Windbg, use the [UEFI Debug Extension](https://github.com/microsoft/uefi_debug_tools/tree/main/UefiDbgExt).
+See [the readme](https://github.com/microsoft/uefi_debug_tools/blob/main/UefiDbgExt/readme.md)
+for more details on installing and using the extension.
 
 ### Serial to TCP forwarding
 
 Windbg currently only supports connecting to the TCP based GDB server. To be able
-to support COM and named pipe based transports, this package contains a
-[ComToTcpServer.py](../Scripts/ComToTcpServer.py) script to forward traffic between
-a serial device and a TCP server. This can also be useful if the user would like
-to debug from a different machine then is connected to the device. For details on
-full use run `python3 ComToTcpServer.py --help`. A couple common example invocations
-are provided below.
+to support COM and named pipe based transports, use the [ComToTcpServer script from uefi_debug_tools](https://github.com/microsoft/uefi_debug_tools/blob/main/Scripts/ComToTcpServer.py)
+to forward traffic between a serial device and a TCP server. This can also be useful
+if the user would like to debug from a different machine then is connected to the device.
+For details on full use run `python3 ComToTcpServer.py --help`. A couple common example
+invocations are provided below.
 
 ```console
 # Forwards a device running on COM5 at baud rate 115200 to the TCP port 5555
