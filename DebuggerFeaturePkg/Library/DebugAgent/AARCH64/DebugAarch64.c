@@ -406,7 +406,7 @@ CheckPageAccess (
   TranslationTable = (UINT64 *)DebugGetTTBR0BaseAddress ();
   T0SZ             = DebugGetTCR () & TCR_T0SZ_MASK;
   TableLevel       = (T0SZ < MIN_T0SZ) ? -1 : (INTN)(T0SZ - MIN_T0SZ) / BITS_PER_LEVEL;
-  EntryCount       = TT_ENTRY_COUNT >> (T0SZ - MIN_T0SZ) % BITS_PER_LEVEL;
+  EntryCount       = TT_ENTRY_COUNT >> (INTN)(T0SZ - MIN_T0SZ) % BITS_PER_LEVEL;
 
   Result = ParsePageTableLevel (
              TranslationTable,
