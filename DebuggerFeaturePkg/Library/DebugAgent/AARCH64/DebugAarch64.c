@@ -332,7 +332,7 @@ DebugArchInit (
 BOOLEAN
 ParsePageTableLevel (
   IN  UINT64  *TranslationTable,
-  IN  UINTN   TableLevel,
+  IN  INTN    TableLevel,
   IN  UINT64  *LastBlockEntry,
   IN  UINTN   Address,
   OUT UINTN   *Attributes
@@ -388,7 +388,7 @@ CheckPageAccess (
   )
 {
   UINT64   *TranslationTable;
-  UINTN    TableLevel;
+  INTN     TableLevel;
   UINTN    EntryCount;
   UINTN    T0SZ;
   BOOLEAN  Result;
@@ -405,8 +405,8 @@ CheckPageAccess (
   Attributes       = 0;
   TranslationTable = (UINT64 *)DebugGetTTBR0BaseAddress ();
   T0SZ             = DebugGetTCR () & TCR_T0SZ_MASK;
-  TableLevel       = (T0SZ - MIN_T0SZ) / BITS_PER_LEVEL;
-  EntryCount       = TT_ENTRY_COUNT >> (T0SZ - MIN_T0SZ) % BITS_PER_LEVEL;
+  TableLevel       = (T0SZ < MIN_T0SZ) ? -1 : (INTN)(T0SZ - MIN_T0SZ) / BITS_PER_LEVEL;
+  EntryCount       = TT_ENTRY_COUNT >> (INTN)(T0SZ - MIN_T0SZ) % BITS_PER_LEVEL;
 
   Result = ParsePageTableLevel (
              TranslationTable,
