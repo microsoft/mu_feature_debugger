@@ -76,7 +76,9 @@
 
 [Guids]
   gEfiEventExitBootServicesGuid
+  gEfiEndOfDxeEventGroupGuid
   gDebuggerControlHobGuid
+  gDebuggerVariableGuid
 
 [Pcd.common]
   DebuggerFeaturePkgTokenSpaceGuid.PcdForceEnableDebugger           ## CONSUMES
