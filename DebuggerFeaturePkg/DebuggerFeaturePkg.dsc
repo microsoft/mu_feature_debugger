@@ -18,6 +18,13 @@
   BUILD_TARGETS                  = DEBUG|RELEASE|NOOPT
   SKUID_IDENTIFIER               = DEFAULT
 
+# memcpy and memset are difficult to avoid, esp. on ARM64.
+# e.g. struct/union/array init/assign, passing va_list by value in PrintLib.
+# Therefore link CompilerIntrinsicsLib everywhere (NULL class).
+# Current upstream AMD64 CompilerIntrinsicsLib does not compile but future does.
+[LibraryClasses.AARCH64]
+  NULL|MdePkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf
+
 [LibraryClasses]
   DebugLib|MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
