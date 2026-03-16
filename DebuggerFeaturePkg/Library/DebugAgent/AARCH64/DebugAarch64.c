@@ -405,8 +405,15 @@ CheckPageAccess (
   Attributes       = 0;
   TranslationTable = (UINT64 *)DebugGetTTBR0BaseAddress ();
   T0SZ             = DebugGetTCR () & TCR_T0SZ_MASK;
-  TableLevel       = (T0SZ < MIN_T0SZ) ? -1 : (INTN)(T0SZ - MIN_T0SZ) / BITS_PER_LEVEL;
-  EntryCount       = TT_ENTRY_COUNT >> (UINTN)((BITS_PER_LEVEL + (INTN)(T0SZ - MIN_T0SZ) % BITS_PER_LEVEL) % BITS_PER_LEVEL);
+if (T0SZ < MIN_T0SZ) {
+    // 5-level paging (52-bit VA): the root table is at level -1 with
+    // (MIN_T0SZ - T0SZ) index bits, giving 2^(MIN_T0SZ-T0SZ) entries.
+    TableLevel = -1;
+    EntryCount = (UINTN)1 << (MIN_T0SZ - T0SZ);
+  } else {
+    TableLevel = (INTN)(T0SZ - MIN_T0SZ) / BITS_PER_LEVEL;
+    EntryCount = TT_ENTRY_COUNT >> ((T0SZ - MIN_T0SZ) % BITS_PER_LEVEL);
+  }
 
   Result = ParsePageTableLevel (
              TranslationTable,
