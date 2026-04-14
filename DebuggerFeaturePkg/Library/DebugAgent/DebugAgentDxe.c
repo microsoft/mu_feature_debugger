@@ -17,6 +17,7 @@
 #include <Library/BaseMemoryLib.h>
 #include <Library/DebugAgentLib.h>
 #include <Library/UefiBootServicesTableLib.h>
+#include <Library/UefiRuntimeServicesTableLib.h>
 #include <Library/UefiLib.h>
 #include <Library/PeCoffGetEntryPointLib.h>
 #include <Library/CpuExceptionHandlerLib.h>
@@ -62,6 +63,7 @@ STATIC EFI_EVENT  mTimerEvent;
 STATIC EFI_EVENT  mCpuArchEvent;
 STATIC EFI_EVENT  mLoadedImageEvent;
 STATIC EFI_EVENT  mExitBootServicesEvent;
+STATIC EFI_EVENT  mEndOfDxeEvent;
 STATIC BOOLEAN    mDebuggerInitialized;
 STATIC BOOLEAN    mDisablePolling;
 STATIC CHAR8      mDbgBreakOnModuleLoadString[64] = { 0 };
@@ -150,6 +152,40 @@ OnExitBootServices (
 {
   DebugAgentTimerDestroy ();
   DebugAgentExceptionDestroy ();
+  return;
+}
+
+/**
+  This routine handles the END_OF_DXE notification, and terminates
+  the debugger
+
+  @param  Event            Not used.
+  @param  Context          Not used.
+
+**/
+VOID
+EFIAPI
+OnEndOfDxe (
+  EFI_EVENT  Event,
+  VOID       *Context
+  )
+{
+  EFI_STATUS  Status;
+  UINT8       Value;
+
+  Value  = 1;
+  Status = gRT->SetVariable (
+                  L"UefiDebuggerActive",
+                  &gDebuggerVariableGuid,
+                  EFI_VARIABLE_BOOTSERVICE_ACCESS,
+                  sizeof (Value),
+                  &Value
+                  );
+
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a: Failed to set UefiDebuggerActive variable. %r\n", __FUNCTION__, Status));
+  }
+
   return;
 }
 
@@ -658,6 +694,23 @@ DxeDebugSetupCallbacks (
 
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a: failed to create Exit Boot Services callback\n", __FUNCTION__));
+  }
+
+  //
+  // Register for READY_TO_BOOT notification, to set a variable for OS loaders to check for debugger enablement.
+  //
+
+  Status = gBS->CreateEventEx (
+                  EVT_NOTIFY_SIGNAL,
+                  TPL_CALLBACK,
+                  OnEndOfDxe,
+                  NULL,
+                  &gEfiEndOfDxeEventGroupGuid,
+                  &mEndOfDxeEvent
+                  );
+
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a: failed to create End of Dxe callback\n", __FUNCTION__));
   }
 
   return EFI_SUCCESS;
