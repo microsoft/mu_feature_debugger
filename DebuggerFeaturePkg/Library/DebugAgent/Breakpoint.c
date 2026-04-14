@@ -37,14 +37,14 @@ BREAKPOINT_REASON  DebuggerBreakpointReason = BreakpointReasonNone;
 **/
 BOOLEAN
 AddSoftwareBreakpoint (
-  UINTN  Address
+  IN UINTN  Address
   )
 {
   UINTN            i;
   BREAKPOINT_INFO  *Entry;
 
   // Make sure we don't overflow OriginalValue.
-  ASSERT (ArchBreakpointInstructionSize <= MAX_BREAKPOINT_SIZE);
+  ASSERT (mArchBreakpointInstructionSize <= MAX_BREAKPOINT_SIZE);
 
   Entry = NULL;
   for (i = 0; i < MAX_BREAKPOINTS; i++) {
@@ -65,9 +65,9 @@ AddSoftwareBreakpoint (
 
   Entry->Active  = TRUE;
   Entry->Address = Address;
-  DbgReadMemory (Address, &(Entry->OriginalValue[0]), ArchBreakpointInstructionSize);
-  DbgWriteMemory (Address, ArchBreakpointInstruction, ArchBreakpointInstructionSize);
-  InvalidateInstructionCacheRange ((VOID *)Address, ArchBreakpointInstructionSize);
+  DbgReadMemory (Address, &(Entry->OriginalValue[0]), mArchBreakpointInstructionSize);
+  DbgWriteMemory (Address, mArchBreakpointInstruction, mArchBreakpointInstructionSize);
+  InvalidateInstructionCacheRange ((VOID *)Address, mArchBreakpointInstructionSize);
   return TRUE;
 }
 
@@ -81,16 +81,16 @@ AddSoftwareBreakpoint (
 **/
 BOOLEAN
 RemoveSoftwareBreakpoint (
-  UINTN  Address
+  IN UINTN  Address
   )
 {
   UINTN  i;
 
   for (i = 0; i < MAX_BREAKPOINTS; i++) {
     if (mBreakpoints[i].Active && (mBreakpoints[i].Address == Address)) {
-      DbgWriteMemory (Address, &(mBreakpoints[i].OriginalValue[0]), ArchBreakpointInstructionSize);
+      DbgWriteMemory (Address, &(mBreakpoints[i].OriginalValue[0]), mArchBreakpointInstructionSize);
       mBreakpoints[i].Active = FALSE;
-      InvalidateInstructionCacheRange ((VOID *)Address, ArchBreakpointInstructionSize);
+      InvalidateInstructionCacheRange ((VOID *)Address, mArchBreakpointInstructionSize);
       return TRUE;
     }
   }
@@ -107,7 +107,7 @@ RemoveSoftwareBreakpoint (
 **/
 VOID
 DebuggerBreak (
-  BREAKPOINT_REASON  Reason
+  IN BREAKPOINT_REASON  Reason
   )
 {
   DebuggerBreakpointReason = Reason;

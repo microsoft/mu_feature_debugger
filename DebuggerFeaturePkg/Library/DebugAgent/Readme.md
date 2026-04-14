@@ -34,6 +34,12 @@ Currently the only implementation is the [GdbStub](./GdbStub) which also has som
 architecture specific files to handle accessing architecture specific information
 like registers.
 
+## MM & PEI Support
+
+Both the MM and PEI implementations are experimental and purely for development
+scenarios. They do not support dynamic configuration and are not as feature rich
+as the DXE implementation.
+
 ## Copyright
 
 Copyright (C) Microsoft Corporation. All rights reserved.

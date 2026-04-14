@@ -67,9 +67,9 @@ typedef struct _EXCEPTION_INFO {
 // Architecture specific definitions used by general debugger code.
 //
 
-extern UINT8   ArchBreakpointInstruction[];
-extern UINTN   ArchBreakpointInstructionSize;
-extern UINT32  ArchExceptionTypes[];
+extern UINT8   mArchBreakpointInstruction[];
+extern UINTN   mArchBreakpointInstructionSize;
+extern UINT32  mArchExceptionTypes[];
 
 //
 // Global used to track debugger invoked breakpoint.
@@ -93,8 +93,8 @@ extern CONST CHAR8  *gDebuggerInfo;
 VOID
 EFIAPI
 DebuggerExceptionHandler (
-  EFI_EXCEPTION_TYPE  InterruptType,
-  EFI_SYSTEM_CONTEXT  SystemContext
+  IN EFI_EXCEPTION_TYPE  InterruptType,
+  IN EFI_SYSTEM_CONTEXT  SystemContext
   );
 
 EFI_STATUS
@@ -134,16 +134,16 @@ IsPageWritable (
 
 BOOLEAN
 DbgReadMemory (
-  UINTN  Address,
-  VOID   *Data,
-  UINTN  Length
+  IN  UINTN  Address,
+  OUT VOID   *Data,
+  IN  UINTN  Length
   );
 
 BOOLEAN
 DbgWriteMemory (
-  UINTN  Address,
-  VOID   *Data,
-  UINTN  Length
+  IN UINTN  Address,
+  IN VOID   *Data,
+  IN UINTN  Length
   );
 
 //
@@ -163,7 +163,7 @@ DebuggerPollInput (
 
 VOID
 DebuggerInitialBreakpoint (
-  UINT64  Timeout
+  IN UINT64  Timeout
   );
 
 //
@@ -172,17 +172,17 @@ DebuggerInitialBreakpoint (
 
 BOOLEAN
 AddSoftwareBreakpoint (
-  UINTN  Address
+  IN UINTN  Address
   );
 
 BOOLEAN
 RemoveSoftwareBreakpoint (
-  UINTN  Address
+  IN UINTN  Address
   );
 
 VOID
 DebuggerBreak (
-  BREAKPOINT_REASON  Reason
+  IN BREAKPOINT_REASON  Reason
   );
 
 //

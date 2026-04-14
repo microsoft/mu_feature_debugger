@@ -76,10 +76,10 @@ VOID
 DebugAgentExceptionDestroy (
   )
 {
-  UINT8  i;
+  UINT8  Index;
 
-  for (i = 0; ArchExceptionTypes[i] != MAX_UINT32; i += 1) {
-    RegisterCpuInterruptHandler (ArchExceptionTypes[i], NULL);
+  for (Index = 0; mArchExceptionTypes[Index] != MAX_UINT32; Index += 1) {
+    RegisterCpuInterruptHandler (mArchExceptionTypes[Index], NULL);
   }
 }
 
@@ -94,14 +94,14 @@ EFI_STATUS
 DebugAgentExceptionInitialize (
   )
 {
-  UINT8       i;
+  UINT8       Index;
   EFI_STATUS  Status;
 
   // First uninstall any handler that needs to be replaced.
   DebugAgentExceptionDestroy ();
 
-  for (i = 0; ArchExceptionTypes[i] != MAX_UINT32; i += 1) {
-    Status = RegisterCpuInterruptHandler (ArchExceptionTypes[i], DebuggerExceptionHandler);
+  for (Index = 0; mArchExceptionTypes[Index] != MAX_UINT32; Index += 1) {
+    Status = RegisterCpuInterruptHandler (mArchExceptionTypes[Index], DebuggerExceptionHandler);
     if (EFI_ERROR (Status)) {
       ASSERT_EFI_ERROR (Status);
       DebugAgentExceptionDestroy ();
@@ -139,10 +139,10 @@ DebugReboot (
 **/
 BOOLEAN
 AccessMemory (
-  UINTN    Address,
-  UINT8    *Data,
-  UINTN    Length,
-  BOOLEAN  Write
+  IN     UINTN    Address,
+  IN OUT UINT8    *Data,
+  IN     UINTN    Length,
+  IN     BOOLEAN  Write
   )
 {
   UINTN       LengthInPage;
@@ -218,7 +218,7 @@ AccessMemory (
   Read system memory.
 
   @param[in]      Address   The virtual address of the memory access.
-  @param[in,out]  Data      The buffer to read memory into.
+  @param[out]     Data      The buffer to read memory into.
   @param[in]      Length    The length of the memory range.
 
   @retval         TRUE      Memory access was complete successfully.
@@ -226,9 +226,9 @@ AccessMemory (
 **/
 BOOLEAN
 DbgReadMemory (
-  UINTN  Address,
-  VOID   *Data,
-  UINTN  Length
+  IN  UINTN  Address,
+  OUT VOID   *Data,
+  IN  UINTN  Length
   )
 {
   return AccessMemory (Address, Data, Length, FALSE);
@@ -238,7 +238,7 @@ DbgReadMemory (
   Write to system memory.
 
   @param[in]      Address   The virtual address of the memory access.
-  @param[in,out]  Data      The buffer of data to write.
+  @param[in]      Data      The buffer of data to write.
   @param[in]      Length    The length of the memory range.
 
   @retval         TRUE      Memory access was complete successfully.
@@ -246,9 +246,9 @@ DbgReadMemory (
 **/
 BOOLEAN
 DbgWriteMemory (
-  UINTN  Address,
-  VOID   *Data,
-  UINTN  Length
+  IN UINTN  Address,
+  IN VOID   *Data,
+  IN UINTN  Length
   )
 {
   return AccessMemory (Address, Data, Length, TRUE);
