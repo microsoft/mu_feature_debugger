@@ -1,0 +1,38 @@
+## @file
+#
+# Thin PEIM wrapper for the PEI debug agent. All logic lives in
+# DebugAgentLib (PeiDebugAgentLib). This PEIM is dispatched after
+# permanent memory is installed.
+#
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+
+[Defines]
+  INF_VERSION                    = 1.27
+  BASE_NAME                      = DebugAgentPei
+  FILE_GUID                      = 7A4F8B72-E12D-4A62-B5C4-D43F89735E28
+  MODULE_TYPE                    = PEIM
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = DebugAgentPeiEntry
+
+[Sources]
+  DebugAgentPei.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  DebuggerFeaturePkg/DebuggerFeaturePkg.dec
+
+[LibraryClasses]
+  PeimEntryPoint
+  DebugAgentLib
+  PrintLib
+
+[Ppis]
+  gEfiPeiMemoryDiscoveredPpiGuid    ## CONSUMES
+
+[Depex]
+  gEfiPeiMemoryDiscoveredPpiGuid

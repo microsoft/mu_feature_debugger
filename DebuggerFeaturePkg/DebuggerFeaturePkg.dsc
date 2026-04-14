@@ -38,6 +38,13 @@
   WatchdogTimerLib|DebuggerFeaturePkg/Library/WatchdogTimerLibNull/WatchdogTimerLibNull.inf
   TransportLogControlLib|DebuggerFeaturePkg/Library/TransportLogControlLibNull/TransportLogControlLibNull.inf
 
+  CacheMaintenanceLib|MdePkg/Library/BaseCacheMaintenanceLibNull/BaseCacheMaintenanceLibNull.inf
+  CpuExceptionHandlerLib|MdeModulePkg/Library/CpuExceptionHandlerLibNull/CpuExceptionHandlerLibNull.inf
+  SerialPortLib|MdePkg/Library/BaseSerialPortLibNull/BaseSerialPortLibNull.inf
+  PeCoffGetEntryPointLib|MdePkg/Library/BasePeCoffGetEntryPointLib/BasePeCoffGetEntryPointLib.inf
+  DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
+  HwResetSystemLib|MdeModulePkg/Library/BaseResetSystemLibNull/BaseResetSystemLibNull.inf
+
   StackCheckLib|MdePkg/Library/StackCheckLibNull/StackCheckLibNull.inf
 
 [LibraryClasses.common.PEIM]
@@ -54,3 +61,8 @@
 [Components.X64, Components.AARCH64]
   DebuggerFeaturePkg/Library/DebugAgent/DebugAgentDxe.inf
   DebuggerFeaturePkg/Library/DebugAgent/DebugAgentMm.inf
+  DebuggerFeaturePkg/Library/DebugAgent/DebugAgentPeiLib.inf
+  DebuggerFeaturePkg/DebugAgentPei/DebugAgentPei.inf {
+    <LibraryClasses>
+      DebugAgentLib|DebuggerFeaturePkg/Library/DebugAgent/DebugAgentPeiLib.inf
+  }

@@ -1,0 +1,67 @@
+## @file
+#
+# The PEI implementation of the DebugAgent.
+#
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+
+[Defines]
+  INF_VERSION                    = 1.27
+  BASE_NAME                      = PeiDebugAgentLib
+  FILE_GUID                      = 7A4F8B72-E12D-4A62-B5C4-D43F89735E27
+  MODULE_TYPE                    = PEIM
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = DebugAgentLib | PEIM PEI_CORE
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = X64 AARCH64
+#
+
+[Sources]
+  DebugAgentPeiLib.c
+  DebugAgent.h
+  Breakpoint.c
+  GdbStub/GdbStub.c
+  GdbStub/GdbStub.h
+
+[Sources.AARCH64]
+  AARCH64/DebugAarch64.c
+  AARCH64/Registers.S | GCC
+  AARCH64/Registers.h
+  GdbStub/GdbStubAarch64.c
+
+[Sources.X64]
+  X64/DebugX64.c
+  X64/AddressCheck.c
+  X64/VirtualMemory.h
+  GdbStub/GdbStubX64.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  DebuggerFeaturePkg/DebuggerFeaturePkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  HobLib
+  WatchdogTimerLib
+  TimerLib
+  CpuExceptionHandlerLib
+  CacheMaintenanceLib
+  DebugTransportLib
+  TransportLogControlLib
+  PcdLib
+  PeiServicesLib
+
+[Pcd.common]
+  DebuggerFeaturePkgTokenSpaceGuid.PcdForceEnablePeiDebugger         ## CONSUMES
+  DebuggerFeaturePkgTokenSpaceGuid.PcdEnableWindbgWorkarounds        ## CONSUMES
+
+[BuildOptions]
+  GCC:*_*_*_CC_FLAGS   = -D BUILDING_IN_UEFI
