@@ -6,8 +6,6 @@
 
 **/
 
-#include <Library/UefiBootServicesTableLib.h>
-#include <Library/UefiLib.h>
 #include <Library/DebugLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/WatchdogTimerLib.h>
@@ -54,10 +52,10 @@ typedef union _DBG_WCR {
 // Structures used by the arch-agnostic code.
 //
 
-UINT8  ArchBreakpointInstruction[]   = { 0x00, 0x00, 0x3E, 0xD4 };
-UINTN  ArchBreakpointInstructionSize = sizeof (ArchBreakpointInstruction);
+UINT8  mArchBreakpointInstruction[]   = { 0x00, 0x00, 0x3E, 0xD4 };
+UINTN  mArchBreakpointInstructionSize = sizeof (mArchBreakpointInstruction);
 
-UINT32  ArchExceptionTypes[] = {
+UINT32  mArchExceptionTypes[] = {
   EXCEPT_AARCH64_SYNCHRONOUS_EXCEPTIONS,
   MAX_UINT32 // End of list
 };
@@ -106,8 +104,8 @@ DEBUG_WATCHPOINT_REGISTERS  DebugWatchpointRegisters[] = {
 VOID
 EFIAPI
 DebuggerExceptionHandler (
-  EFI_EXCEPTION_TYPE  InterruptType,
-  EFI_SYSTEM_CONTEXT  SystemContext
+  IN EFI_EXCEPTION_TYPE  InterruptType,
+  IN EFI_SYSTEM_CONTEXT  SystemContext
   )
 {
   EFI_SYSTEM_CONTEXT_AARCH64  *Context;
@@ -194,9 +192,9 @@ DebuggerExceptionHandler (
   //
 
   if ((ExceptionType == 0x3c) &&
-      (CompareMem ((UINT8 *)Context->ELR, &ArchBreakpointInstruction[0], ArchBreakpointInstructionSize) == 0))
+      (CompareMem ((UINT8 *)Context->ELR, &mArchBreakpointInstruction[0], mArchBreakpointInstructionSize) == 0))
   {
-    Context->ELR += ArchBreakpointInstructionSize;
+    Context->ELR += mArchBreakpointInstructionSize;
   }
 
   //

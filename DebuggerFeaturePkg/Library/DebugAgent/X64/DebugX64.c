@@ -12,8 +12,6 @@
 #include <Library/BaseMemoryLib.h>
 #include <Library/DebugLib.h>
 #include <Library/SerialPortLib.h>
-#include <Library/UefiBootServicesTableLib.h>
-#include <Library/UefiLib.h>
 #include <Library/WatchdogTimerLib.h>
 
 #include <Register/Intel/Cpuid.h>
@@ -63,10 +61,10 @@ STATIC UINT64                 mPerformanceCounterFreq;
 // Structures used by the arch-agnostic code.
 //
 
-UINT8  ArchBreakpointInstruction[]   = { 0xCC };
-UINTN  ArchBreakpointInstructionSize = sizeof (ArchBreakpointInstruction);
+UINT8  mArchBreakpointInstruction[]   = { 0xCC };
+UINTN  mArchBreakpointInstructionSize = sizeof (mArchBreakpointInstruction);
 
-UINT32  ArchExceptionTypes[] = {
+UINT32  mArchExceptionTypes[] = {
   EXCEPT_X64_DIVIDE_ERROR,
   EXCEPT_X64_DEBUG,
   EXCEPT_X64_BREAKPOINT,
@@ -92,8 +90,8 @@ UINT32  ArchExceptionTypes[] = {
 VOID
 EFIAPI
 DebuggerExceptionHandler (
-  EFI_EXCEPTION_TYPE  InterruptType,
-  EFI_SYSTEM_CONTEXT  SystemContext
+  IN EFI_EXCEPTION_TYPE  InterruptType,
+  IN EFI_SYSTEM_CONTEXT  SystemContext
   )
 {
   EFI_SYSTEM_CONTEXT_X64  *Context;
